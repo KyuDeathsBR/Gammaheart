@@ -8,6 +8,8 @@
 
     "chapter": 2,
 
+    "hidden": true,
+
     "map": "room1",
     "party": ["kris", "susie", "ralsei"],
     "inventory": {

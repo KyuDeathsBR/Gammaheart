@@ -31,7 +31,7 @@
     "transition": false,
 
     "quickReload": true,
-    "hidden": false,
+    "hidden": true,
 
     "defaultFlagFilterType": "any",
     "defaultFlagFilterQuery": "#",
