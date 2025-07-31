@@ -2,6 +2,7 @@
 .DS_Store
 
 mods/*
+!mods/gammaheart/
 !mods/_light/
 !mods/_testmod/
 !mods/example/
