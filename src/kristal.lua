@@ -117,7 +117,7 @@ function love.load(args)
     FRAMERATE = Kristal.Config["fps"]
 
     -- set master volume
-    Kristal.setVolume(Kristal.Config["masterVolume"] or 0.6)
+    Kristal.setVolume(Kristal.Config["masterVolume"] or 1)
 
     -- hide mouse
     Kristal.hideCursor()
@@ -1525,7 +1525,7 @@ function Kristal.loadConfig()
         fullscreen = false,
         simplifyVFX = false,
         autoRun = false,
-        masterVolume = 0.6,
+        masterVolume = 1,
         favorites = {},
         systemCursor = false,
         alwaysShowCursor = false,

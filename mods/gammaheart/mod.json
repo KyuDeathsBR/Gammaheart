@@ -17,7 +17,7 @@
     "chapter": 1,
 
     // The map that you start in when first starting the mod.
-    "map": "room1",
+    "map": "town",
 
     // The party. The first character is the player.
     "party": ["kyuma"],
@@ -50,8 +50,6 @@
     // Config values for the engine and any libraries you may have.
     // These config values can control chapter-specific features as well.
     "config": {
-        "kristal": {
 
-        }
     }
 }

@@ -395,6 +395,10 @@ function Character:stopShake()
     end
 end
 
+---@param sprite Sprite? The sprite used for the flash
+---@param offset_x number? The offset horizontally for the sprite
+---@param offset_y number? The offset vertically for the sprite
+---@param layer number? The layer of the flash sprite
 function Character:flash(sprite, offset_x, offset_y, layer)
     local sprite_to_use = sprite or self.sprite
     return sprite_to_use:flash(offset_x, offset_y, layer)

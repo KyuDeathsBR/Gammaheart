@@ -26,12 +26,12 @@ function actor:init()
     self.default = "walk"
 
     -- Sound to play when this actor speaks (optional)
-    self.voice = nil
+    self.voice = "kyuma/dark"
     -- Path to this actor's portrait for dialogue (optional)
-    self.portrait_path = nil
+    self.portrait_path = "face/kyuma/dark"
     -- Offset position for this actor's portrait (optional)
     self.portrait_offset = nil
-
+    
     -- Whether this actor as a follower will blush when close to the player
     self.can_blush = false
 
@@ -53,9 +53,9 @@ function actor:init()
         ["battle/lightning_shot_ready/loop"] = {"battle/lightning_shot_ready", 1/15, true, frames={5,6,7,8,9,10,11}},
 
         ["battle/attack_ready"] = {"battle/attackready", 1/12, true},
-        ["battle/act_ready"]    = {"battle/actready", 0.2, true},
-        ["battle/spell_ready"]  = {"battle/actready", 0.2, true},
-        ["battle/item_ready"]   = {"battle/itemready", 0.2, true},
+        ["battle/act_ready"]    = {"battle/actready", 0.2, false},
+        ["battle/spell_ready"]  = {"battle/actready", 0.2, false},
+        ["battle/item_ready"]   = {"battle/itemready", 0.2, false},
         ["battle/defend_ready"] = {"battle/defend", 1/15, false},
 
         ["battle/act_end"]      = {"battle/actend", 1/15, false, next="battle/idle"},
@@ -97,24 +97,24 @@ function actor:init()
         ["slide"] = {0, 0},
 
         -- Battle offsets
-        ["battle/idle"] = {-2, -14},
+        ["battle/idle"] = {-2, 4},
 
-        ["battle/attack"] = {-2, -14},
-        ["battle/attackready"] = {-2, -14},
-        ["battle/lightning_shot"] = {-2, -14},
-        ["battle/lightning_shot_ready"] = {-2, -14},
-        ["battle/act"] = {-2, -14},
-        ["battle/actend"] = {-2, -14},
-        ["battle/actready"] = {-2, -14},
-        ["battle/item"] = {-2, -14},
-        ["battle/itemready"] = {-2, -14},
-        ["battle/defend"] = {-2, -14},
+        ["battle/attack"] = {-2, 4},
+        ["battle/attackready"] = {-2, 4},
+        ["battle/lightning_shot"] = {-2, 4},
+        ["battle/lightning_shot_ready"] = {-2, 4},
+        ["battle/act"] = {-2, 4},
+        ["battle/actend"] = {-2, 4},
+        ["battle/actready"] = {-2, 4},
+        ["battle/item"] = {-2, 4},
+        ["battle/itemready"] = {-2, 4},
+        ["battle/defend"] = {-2, 4},
 
-        ["battle/defeat"] = {-2, -14},
-        ["battle/hurt"] = {-2, -14},
+        ["battle/defeat"] = {-2, 4},
+        ["battle/hurt"] = {-2, 4},
 
-        ["battle/intro"] = {-2, -14},
-        ["battle/victory"] = {-2, -14},
+        ["battle/intro"] = {-2, 4},
+        ["battle/victory"] = {-2, 4},
 
         -- Cutscene offsets
         ["pose"] = {-4, -2},
@@ -123,7 +123,7 @@ function actor:init()
         ["ball"] = {1, 8},
         ["landed"] = {-4, -2},
 
-        ["fell"] = {-14, 1},
+        ["fell"] = {4, 1},
 
         ["sword_jump_down"] = {-19, -5},
         ["sword_jump_settle"] = {-27, 4},

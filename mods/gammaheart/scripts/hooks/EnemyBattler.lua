@@ -30,6 +30,14 @@ function EnemyBattler:onTurnEnd()
     end
 end
 
+---Creates a custom status message for the enemy.
+---@param text string
+---@param font? string
+---@param color? table
+---@param kill? boolean
+---@param x? number
+---@param y? number
+---@return StatusMessage
 function EnemyBattler:customStatusMessage(text,font, color, kill,x,y)
     local x, y = self:getRelativePos(x or self.width/2,y or self.height/2)
 
@@ -37,8 +45,12 @@ function EnemyBattler:customStatusMessage(text,font, color, kill,x,y)
     if not kill then
         offset = (self.hit_count * 20)
     end
-
-    local percent = StatusMessage(font or "statustext", text, x + 4, y + 20 - offset, color)
+    local function getFont()
+        if font and not font:match("statustext_") then
+            return "statustext_"..font
+        end
+    end
+    local percent = StatusMessage(font and getFont() or "statustext", text, x + 4, y + 20 - offset, color)
     if kill then
         percent.kill_others = true
     end
@@ -54,7 +66,7 @@ end
 function EnemyBattler:stun(rounds)
     self.stunned = true
     self.stunned_rounds = rounds or 1
-    local status = self:customStatusMessage("STUNNED")
+    local status = self:customStatusMessage("STUNNED","gradient",{0.5,0.7,0.9})
 end
 
 return EnemyBattler

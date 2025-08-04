@@ -23,7 +23,14 @@ function spell:init()
     self.tags = {"stun"}
 end
 
+function spell:isUsable(user)
+    
+    self.effect = #Game.battle.enemies > 1 and "Stun\nEnemy" or "Shock\nEnemy"
+    return super.isUsable(self,user)
+end
+
 function spell:onCast(user,target)
+        local stat = user.chara:getStat("magic",10,false)
     if #Game.battle.party > 1 then
         user:setAnimation(self.cast_anim, function()
             if target.actor.animations["electrocuted"] then
@@ -32,7 +39,7 @@ function spell:onCast(user,target)
             if #Game.battle.enemies > 1 then
                 target:stun(3)
             end
-            target:hurt(user.chara:getStat("magic",10,false))
+            target:hurt(stat * math.max(stat-4.5,4.5))
             Game.battle:finishAction()
         end)
     else
@@ -44,7 +51,7 @@ function spell:onCast(user,target)
                 if #Game.battle.enemies > 1 then
                     target:stun(3)
                 end
-                target:hurt(user.chara:getStat("magic",10,false))
+                target:hurt(stat * math.max(stat-4.5,3.5))
                 Game.battle:finishAction()
             end)
         end)
@@ -58,7 +65,7 @@ end
 ---@param target Battler[]|EnemyBattler|PartyBattler|EnemyBattler[]|PartyBattler[]
 function spell:onStart(user, target)
     Game.battle:battleText(self:getCastMessage(user, target))
-    user:setAnimation("battle/lightning_shot_ready", function()
+    user:setAnimation(#Game.battle.party > 1 and self.select_anim or "battle/lightning_shot_ready", function()
         Game.battle:clearActionIcon(user)
         local result = self:onCast(user, target)
         if result or result == nil then

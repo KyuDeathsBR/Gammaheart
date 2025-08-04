@@ -1,14 +1,14 @@
 local character, super = Class(PartyMember, "kyuma")
 
 function character:init()
+    self.can_transform = true
     super.init(self)
 
     -- Display name
     self.name = "Kyuma"
-
     -- Actor (handles overworld/battle sprites)
     self:setActor("kyuma")
-    self:setLightActor("kyuma")
+    self:setLightActor("kyumalw")
     self:setDarkTransitionActor("kyuma")
 
     -- Display level (saved to the save file)
@@ -17,9 +17,11 @@ function character:init()
     self.title = "A werewolf hero, ready to\nfight for the fate of the world."
 
     -- Determines which character the soul comes from (higher number = higher priority)
-    self.soul_priority = 2
+    self.soul_priority = 1
     -- The color of this character's soul (optional, defaults to red)
-    self.soul_color = {1, 0, 0}
+    self.soul_color = {0.3, 1, 1}
+
+    self.priority_type = "ONLY_TARGETED" 
 
     -- Whether the party member can act / use spells
     self.has_act = true
