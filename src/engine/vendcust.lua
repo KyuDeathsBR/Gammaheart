@@ -8,7 +8,9 @@
 -- Also set if command parameter `--mod <id>` is passed to the engine. \
 -- (The value set here overrides that)
 ---@type string
-TARGET_MOD = "gamma_heart"
+TARGET_MOD = "chapter_select"
+
+CLOSE_ON_REDIRECT = false
 
 -- Disables Kristal's built-in Main menu and \
 -- immediately loads the target mod.

@@ -531,7 +531,7 @@ function Kristal.onKeyPressed(key, is_repeat)
                         Kristal.quickReload("temp")
                     end
                 else
-                    Kristal.returnToMenu()
+                    Kristal.returnToMenu(true)
                 end
             end
         end
@@ -1005,6 +1005,7 @@ function Kristal.clearModState()
     -- Clear disruptive active globals
     Object._clearCache()
     Draw._clearStacks()
+    Language = Mod and Mod.selected_language
     -- End the current mod
     Kristal.callEvent(KRISTAL_EVENT.unload)
     Mod = nil
@@ -1035,7 +1036,8 @@ function Kristal.clearModState()
 end
 
 --- Exits the current mod and returns to the Kristal menu.
-function Kristal.returnToMenu()
+---@param force_close boolean? If Gammaheart should forcefully close
+function Kristal.returnToMenu(force_close)
     -- Go to empty state
     Gamestate.switch({})
     -- Clear the mod
@@ -1043,7 +1045,9 @@ function Kristal.returnToMenu()
 
     -- Quit the game if the menu is disabled
     if AUTO_MOD_START and TARGET_MOD then
-        love.event.quit(0)
+        if CLOSE_ON_REDIRECT or force_close then
+            love.event.quit(0)
+        end
         return
     end
 
@@ -1068,6 +1072,7 @@ end
 function Kristal.quickReload(mode)
     -- Temporarily save game variables
     local save, save_id, encounter, shop
+    Language = Mod.selected_language
     if mode == "temp" then
         save = Game:save()
         save_id = Game.save_id
@@ -1076,7 +1081,6 @@ function Kristal.quickReload(mode)
     elseif mode == "save" then
         save_id = Game.save_id
     end
-
     -- Temporarily save the current mod id
     local mod_id = Mod.info.id
 
@@ -1111,6 +1115,7 @@ function Kristal.quickReload(mode)
         else
             Kristal.loadMod(mod_id, save_id)
         end
+        Mod.selected_language = Language
     end)
 end
 
@@ -1167,7 +1172,7 @@ function Kristal.loadMod(id, save_id, save_name, after)
     -- Create the Mod table, which is a global table that
     -- can contain a mod's custom variables and functions
     -- with Mod.info referencing the mod data (from the .json)
-    Mod = Mod or { info = mod, libs = {} }
+    Mod = Mod or { info = mod, libs = {}, selected_language = Language or "en" }
 
     -- Check for mod.lua
     if mod.script_chunks["mod"] then
