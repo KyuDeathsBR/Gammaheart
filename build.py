@@ -4,13 +4,15 @@ import argparse
 import sys
 import shutil
 import grope
+import errno
+import stat
 from pe_tools import parse_pe, IMAGE_DIRECTORY_ENTRY_RESOURCE
 from pe_tools.rsrc import parse_pe_resources, pe_resources_prepack, parse_prelink_resources, KnownResourceTypes
 from pe_tools.version_info import parse_version_info, VersionInfo
 
-ver_str = "0.1.0"
-windows_ver = "0, 1, 0, 0"
-file_description = "Leading Brand DELTARUNE-type Software"
+ver_str = "0.0.1-dev"
+windows_ver = "0, 0, 1, 0"
+file_description = "DELTARUNE fangame"
 
 # Contains code from https://github.com/avast/pe_tools/blob/master/pe_tools/peresed.py
 
@@ -88,7 +90,7 @@ def setInfo(key, value):
 
 build_path = "build"
 output_path = "output"
-kristal_path = "Kristal"
+kristal_path = "GammaHeart"
 
 try:
     os.makedirs(os.path.join(build_path, "executable"))
@@ -99,7 +101,7 @@ try:
 except FileExistsError:
     pass
 try:
-    os.makedirs(os.path.join(build_path, "kristal"))
+    os.makedirs(os.path.join(build_path, "gammaheart"))
 except FileExistsError:
     pass
 try:
@@ -113,12 +115,12 @@ def fatal(error):
 
 parser = argparse.ArgumentParser(prog="kristal_build.py", description='Utility script to compile Kristal.')
 parser.add_argument('--love', nargs=1, help='The path to the LÖVE folder (not the executable)')
-parser.add_argument('--kristal', nargs=1, help='The path to the Kristal folder')
+parser.add_argument('--gamma', nargs=1, help='The path to the GammaHeart folder')
 
 args = parser.parse_args()
 
-if args.kristal:
-    kristal_path = args.kristal[0]
+if args.gamma:
+    kristal_path = args.gamma[0]
 
 print(f"Compiling Kristal...")
 
@@ -138,7 +140,7 @@ ignorefiles = [
     ".github",
     ".git",
     ".vscode",
-    "mods",
+    "_ignored_mods",
     "docs",
     "lib",
     "build",
@@ -149,20 +151,33 @@ try:
     for file in os.listdir(kristal_path):
         if not file in ignorefiles:
             if os.path.isfile(os.path.join(kristal_path, file)):
-                shutil.copy(os.path.join(kristal_path, file), os.path.join(build_path, "kristal"))
+                shutil.copy(os.path.join(kristal_path, file), os.path.join(build_path, "gammaheart"))
             elif os.path.isdir(os.path.join(kristal_path, file)):
-                shutil.copytree(os.path.join(kristal_path, file), os.path.join(build_path, "kristal", file))
+                shutil.copytree(os.path.join(kristal_path, file), os.path.join(build_path, "gammaheart", file))
 except FileNotFoundError:
-    fatal("Error: \"kristal\" folder missing! Please place a clean copy of Kristal's source code next to this script in a folder titled \"kristal\".")
+    fatal("Error: \"GammaHeart\" folder missing! Please place a clean copy of GammaHeart's source code next to this script in a folder titled \"GammaHeart\".")
 
 print("Making .zip file...")
-shutil.make_archive(os.path.join(build_path, "kristal"), 'zip', os.path.join(build_path, "kristal"))
+shutil.make_archive(os.path.join(build_path, "gammaheart"), 'zip', os.path.join(build_path, "GammaHeart"))
 
 print("Removing copied files...")
-shutil.rmtree(os.path.join(build_path, "kristal"))
+def onerror(func, path, exc_info):
+    # Is the error an Access Denied error?
+    if func in (os.rmdir, os.remove) and exc_info[1].errno == errno.EACCES:
+        # Change the file to be readable, writable, executable for owner
+        os.chmod(path, stat.S_IRWXU)
+        # Retry the operation
+        func(path)
+    else:
+        raise # Re-raise other types of errors
+
+try:
+    shutil.rmtree(os.path.join(build_path, "gammaheart"), onexc=onerror)
+except Exception as e:
+    print(f"Reconfiguring directory: {e}")
 
 print("Renaming .zip to .love and preparing for packaging...")
-shutil.move(os.path.join(build_path, "kristal.zip"), kristal_love_path)
+shutil.move(os.path.join(build_path, "GammaHeart.zip"), kristal_love_path)
 
 love2d_path = None
 
@@ -220,9 +235,9 @@ print("Patching in custom information...")
 setInfo("FileVersion", windows_ver)
 setInfo("ProductVersion", windows_ver)
 setInfo("FileDescription", file_description)
-setInfo("InternalName", "Kristal")
-setInfo("LegalCopyright", "Copyright © 2025 Kristal Team")
-setInfo("OriginalFilename", "kristal.exe")
+setInfo("InternalName", "GammaHeart")
+setInfo("LegalCopyright", "Copyright © 2025 Kristal Team, Mod created by KyuuzinBR_")
+setInfo("OriginalFilename", "gamma_heart.exe")
 setInfo("ProductName", "Kristal")
 
 
@@ -232,7 +247,7 @@ pe.set_directory(IMAGE_DIRECTORY_ENTRY_RESOURCE, prepacked.pack(addr))
 
 print("Writing new file...")
 
-with open(os.path.join(build_path, "executable", "kristal.exe"), 'wb') as fout:
+with open(os.path.join(build_path, "executable", "gamma_heart.exe"), 'wb') as fout:
     grope.dump(pe.to_blob(), fout)
 
 
@@ -266,8 +281,8 @@ for file in os.listdir(os.path.join(kristal_path, "lib")):
     shutil.copy(os.path.join(kristal_path, "lib", file), os.path.join(build_path, "lovepkg"))
 
 print("Zipping Kristal packages...")
-shutil.make_archive(os.path.join(output_path, "kristal-"+ver_str+"-love"), 'zip', os.path.join(build_path, "lovepkg"))
-shutil.make_archive(os.path.join(output_path, "kristal-"+ver_str+"-win"), 'zip', os.path.join(build_path, "executable"))
+shutil.make_archive(os.path.join(output_path, "gammaheart-"+ver_str+"-love"), 'zip', os.path.join(build_path, "lovepkg"))
+shutil.make_archive(os.path.join(output_path, "gammaheart-"+ver_str+"-win"), 'zip', os.path.join(build_path, "executable"))
 
 print("Packaging example mod...")
 
@@ -276,16 +291,23 @@ try:
 except FileExistsError:
     pass
 
-shutil.copytree(os.path.join(kristal_path, "mods", "example", "assets"), os.path.join(build_path, "example", "assets"))
-shutil.copytree(os.path.join(kristal_path, "mods", "example", "scripts"), os.path.join(build_path, "example", "scripts"))
-shutil.copy(os.path.join(kristal_path, "mods", "example", "mod.json"), os.path.join(build_path, "example", "mod.json"))
-shutil.copy(os.path.join(kristal_path, "mods", "example", "mod.lua"), os.path.join(build_path, "example", "mod.lua"))
-shutil.copy(os.path.join(kristal_path, "mods", "example", "example.tiled-project"), os.path.join(build_path, "example", "example.tiled-project"))
+no_example_mod = False
 
-shutil.make_archive(os.path.join(output_path, "example-mod"), 'zip', os.path.join(build_path, "example"))
+try:
+    shutil.copytree(os.path.join(kristal_path, "mods", "example", "assets"), os.path.join(build_path, "example", "assets"))
+    shutil.copytree(os.path.join(kristal_path, "mods", "example", "scripts"), os.path.join(build_path, "example", "scripts"))
+    shutil.copy(os.path.join(kristal_path, "mods", "example", "mod.json"), os.path.join(build_path, "example", "mod.json"))
+    shutil.copy(os.path.join(kristal_path, "mods", "example", "mod.lua"), os.path.join(build_path, "example", "mod.lua"))
+    shutil.copy(os.path.join(kristal_path, "mods", "example", "example.tiled-project"), os.path.join(build_path, "example", "example.tiled-project"))
+    shutil.make_archive(os.path.join(output_path, "example-mod"), 'zip', os.path.join(build_path, "example"))
+except FileNotFoundError:
+    no_example_mod = True
+    pass
+
 
 print("Done!")
 print("Generated files:")
-print("> kristal-"+ver_str+"-love.zip")
-print("> kristal-"+ver_str+"-win.zip")
-print("> example-mod.zip")
+print("> gammaheart-"+ver_str+"-love.zip")
+print("> gammaheart-"+ver_str+"-win.zip")
+if not no_example_mod:
+    print("> example-mod.zip")

@@ -1,13 +1,15 @@
 .vscode/
 .DS_Store
 
-mods/*
-!mods/gammaheart/
-!mods/_light/
-!mods/_testmod/
-!mods/example/
-!mods/previewtest/
-!mods/z/
+GammaHeart/mods/*
+!GammaHeart/mods/gammaheart/
+!GammaHeart/mods/gammaheartch1/
+!GammaHeart/mods/chselect/
+!GammaHeart/mods/_light/
+!GammaHeart/mods/_testmod/
+!GammaHeart/mods/example/
+!GammaHeart/mods/previewtest/
+!GammaHeart/mods/z/
 
 build/
 output/

@@ -1,0 +1,52 @@
+{
+    "automappingRulesFile": "",
+    "commands": [
+    ],
+    "extensionsPath": "extensions",
+    "folders": [
+        "scripts/world"
+    ],
+    "properties": [
+    ],
+    "propertyTypes": [
+        {
+            "color": "#ff7bb4ff",
+            "drawFill": true,
+            "id": 3,
+            "members": [
+                {
+                    "name": "LOLCAT",
+                    "type": "string",
+                    "value": "REKROOT AYE!1"
+                },
+                {
+                    "name": "en",
+                    "type": "string",
+                    "value": "RECRUIT ME!!!"
+                },
+                {
+                    "name": "es",
+                    "type": "string",
+                    "value": "¡¡¡RECRUTAME!!!"
+                },
+                {
+                    "name": "ja",
+                    "type": "string",
+                    "value": "私をリクルートして！"
+                },
+                {
+                    "name": "pt-br",
+                    "type": "string",
+                    "value": "ME RECRUTE!!!"
+                }
+            ],
+            "name": "non_recruited_text",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "project"
+            ]
+        }
+    ]
+}
