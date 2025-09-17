@@ -36,7 +36,29 @@ function actor:init()
     self.can_blush = false
 
     -- Table of sprite animations
-    self.animations = {}
+    self.animations = {
+        ["battle/idle"]         = {"battle/idle", 0.2, true},
+
+        ["battle/attack"]       = {"battle/idle", 1/15, false},
+        ["battle/act"]          = {"battle/idle", 1/15, false},
+        ["battle/spell"]        = {"battle/idle", 1/15, false, next="battle/idle"},
+        ["battle/item"]         = {"battle/idle", 1/12, false, next="battle/idle"},
+        ["battle/spare"]        = {"battle/idle", 1/15, false, next="battle/idle"},
+
+        ["battle/attack_ready"] = {"battle/idle", 0.2, true},
+        ["battle/act_ready"]    = {"battle/idle", 0.2, true},
+        ["battle/spell_ready"]  = {"battle/idle", 0.2, true},
+        ["battle/item_ready"]   = {"battle/idle", 0.2, true},
+        ["battle/defend_ready"] = {"battle/idle", 1/15, false},
+
+        ["battle/act_end"]      = {"battle/idle", 1/15, false, next="battle/idle"},
+
+        ["battle/hurt"]         = {"battle/idle", 1/15, false, temp=true, duration=0.5},
+        ["battle/defeat"]       = {"battle/idle", 1/15, false},
+
+        ["battle/transition"]   = {"battle/idle", 1/15, false},
+        ["battle/victory"]      = {"battle/idle", 1/10, false},
+    }
 
     -- Tables of sprites to change into in mirrors
     self.mirror_sprites = {

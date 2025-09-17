@@ -619,18 +619,24 @@ end
 --- Gets the `Follower` or `Player` of a character currently in the party
 ---@param party string|PartyMember|PartyAlly  The party member to get the character for
 ---@return Player|Follower?
-function World:getPartyCharacterInParty(party)
+function World:getPartyCharacterInParty(party,ignoreplayer)
     if type(party) == "string" then
-        party = Game:getPartyMember(party) or Game:getPartyAlly(party)
+        party = Game:getPartyMember(party) or Game:getPartyAlly(party,false)
     end
-    if self.player and (Game:hasPartyMember(self.player:getPartyMember()) or Game:hasPartyAlly(self.player:getPartyMember())) and party == self.player:getPartyMember() then
+    if not ignoreplayer and self.player and (Game:hasPartyMember(self.player:getPartyMember()) or Game:hasPartyAlly(self.player:getPartyAlly())) and party.id == (self.player:getPartyMember() or self.player:getPartyAlly()).id then
         return self.player
     else
         for _,follower in ipairs(self.followers) do
-            if (Game:hasPartyMember(follower:getPartyMember()) or Game:hasPartyAlly(follower:getPartyMember())) and party == follower:getPartyMember() then
+            if (Game:hasPartyMember(follower:getPartyMember())
+             or Game:hasPartyAlly(follower:getPartyAlly())) 
+             and party.id == (follower:getPartyMember() or follower:getPartyAlly()).id 
+             and party.unique_id == (follower:getPartyMember() or follower:getPartyAlly()).unique_id then
                 return follower
             end
         end
+    end
+    if self.player and (Game:hasPartyMember(self.player:getPartyMember()) or Game:hasPartyAlly(self.player:getPartyAlly())) and party.id == (self.player:getPartyMember() or self.player:getPartyAlly()).id then
+        return self.player
     end
 end
 
@@ -661,8 +667,9 @@ end
 ---|"index"     # The index of the follower in the list of followers
 ---|"temp"      # Whether the follower is temporary and disappears when the current map is exited (defaults to `true`)
 ---|"party"     # The id of the party member associated with this follower
+---@param ally? boolean Defines if the follower is an ally. used for automatic indexing
 ---@return Follower
-function World:spawnFollower(chara, options)
+function World:spawnFollower(chara, options,ally)
     if type(chara) == "string" then
         chara = Registry.createActor(chara)
     end
@@ -682,6 +689,9 @@ function World:spawnFollower(chara, options)
         if self.player then
             follower:setFacing(self.player.facing)
         end
+    end
+    if ally then
+        follower.ally = true
     end
     if options["x"] or options["y"] then
         follower:setPosition(options["x"] or follower.x, options["y"] or follower.y)
@@ -716,7 +726,7 @@ function World:spawnParty(marker, party, extra, facing)
     if #party > 0 then
         for i,chara in ipairs(party) do
             if type(chara) == "string" then
-                party[i] = Game:getPartyMember(chara) or Game:getPartyAlly(chara)
+                party[i] = Game:getPartyMember(chara) or Game:getPartyAlly(chara,true)
             end
         end
         if type(marker) == "table" then
@@ -728,7 +738,7 @@ function World:spawnParty(marker, party, extra, facing)
             self.player:setFacing(facing)
         end
         for i = 2, #party do
-            local follower = self:spawnFollower(party[i]:getActor(), {party = party[i].id})
+            local follower = self:spawnFollower(party[i]:getActor(), {party = party[i].id},party[i]:includes(PartyAlly))
             follower:setFacing(facing or self.player.facing)
         end
         for _,actor in ipairs(extra or Game.temp_followers or {}) do
@@ -1262,6 +1272,26 @@ function World:update()
     end
 
     local half_alpha = self.battle_alpha * 0.52
+
+    table.sort(self.followers,
+    ---comment
+    ---@param a Follower
+    ---@param b Follower
+    function (a,b)
+        if a.ally then
+            if b.ally then
+                return a.index < b.index
+            else
+                return false
+            end 
+        else
+            if b.ally then
+                return true
+            else
+                return a.index < b.index
+            end
+        end
+    end)
 
     for _,v in ipairs(self.followers) do
         v.sprite:setColor(1 - half_alpha, 1 - half_alpha, 1 - half_alpha, 1)

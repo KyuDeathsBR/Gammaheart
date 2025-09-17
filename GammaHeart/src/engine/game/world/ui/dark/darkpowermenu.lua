@@ -42,8 +42,20 @@ function DarkPowerMenu:init()
     self:addChild(self.party)
 
     self.party.on_select = function(new, old)
-        Game.party[old]:onPowerDeselect(self)
-        Game.party[new]:onPowerSelect(self)
+        if Game.party[old] then
+            Game.party[old]:onPowerSelect(self)
+        else
+            if Game.ally[old] then
+                Game.ally[old]:onPowerSelect(self)
+            end
+        end
+        if new then
+            if Game.party[new] then
+                Game.party[new]:onPowerSelect(self)
+            elseif Game.ally[new] then
+                Game.ally[new]:onPowerSelect(self)
+            end
+        end
     end
 
     -- PARTY, SPELLS

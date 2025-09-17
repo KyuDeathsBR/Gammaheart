@@ -7,7 +7,7 @@ function Follower:init(chara, x, y, target)
     super.init(self, chara, x, y)
 
     self.is_follower = true
-
+    self.ally = false
     self.index = 1
     self.target = target
 

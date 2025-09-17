@@ -1,16 +1,16 @@
 local Dummy, super = Class(Encounter)
 
-function Dummy:init()
+function Dummy:init()   
 
     self.hasnaayi = Game:hasPartyMember("naayi")
 
     ---@type HireableCharacter|Event?
     self.mapNaayi = nil
     if not self.hasnaayi then
-        self.naayi = Game.battle:addPartyBattler(Game:getPartyMember("naayi"))
+        self.mapNaayi = Game.world:getEvent(2696)
+        self.naayi = Game.battle:addPartyBattler(Game:getPartyMember("naayi"),0,640,self.mapNaayi) or Game.battle:addPartyBattler(Game:getPartyAlly("naayi"),0,640,self.mapNaayi) or Game.battle:addPartyBattler(Registry.createAlly("naayi"),0,640,self.mapNaayi)
         self.naayi.chara.mode = Mod.mode
         self.naayi.chara:onModeChange(nil,nil,self.naayi)
-        self.mapNaayi = Game.world:getEvent(2696)
     end
     super.init(self)
     -- Text displayed at the bottom of the screen at the start of the encounter

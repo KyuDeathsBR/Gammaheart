@@ -85,21 +85,21 @@ function actor:init()
     -- Table of sprite offsets (indexed by sprite name)
     self.offsets = {
         -- Movement offsets
-        ["walk/left"] = {-12, -8},
-        ["walk/right"] = {-12, -8},
-        ["walk/up"] = {-12, -8},
-        ["walk/down"] = {-12, -8},
+        ["walk/left"] = {-12, 2},
+        ["walk/right"] = {-12, 2},
+        ["walk/up"] = {-12, 2},
+        ["walk/down"] = {-12, 2},
 
         ["walk_blush/down"] = {0, 0},
 
         ["slide"] = {0, 0},
 
         -- Battle offsets
-        ["battle/idle"] = {-12, -8},
+        ["battle/idle"] = {-12, 2},
 
-        ["battle/attack"] = {-12, -8},
-        ["battle/attackready"] = {-12, -8},
-        ["battle/attack_ready/loop"] = {-12, -8},
+        ["battle/attack"] = {-12, 2},
+        ["battle/attackready"] = {-12, 2},
+        ["battle/attack_ready/loop"] = {-12, 2},
         ["battle/act"] = {-2, 4},
         ["battle/actend"] = {-2, 4},
         ["battle/actready"] = {-2, 4},
@@ -110,8 +110,8 @@ function actor:init()
         ["battle/defeat"] = {-2, 4},
         ["battle/hurt"] = {-2, 4},
 
-        ["battle/intro"] = {-12, -8},
-        ["battle/victory"] = {-12, -8},
+        ["battle/intro"] = {-12, 2},
+        ["battle/victory"] = {-12, 2},
 
         -- Cutscene offsets
         ["pose"] = {-4, -2},

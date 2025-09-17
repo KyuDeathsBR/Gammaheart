@@ -64,6 +64,7 @@
 ---@field spells string[]
 ---@field equipped {weapon: ItemSaveData, armor: [ItemSaveData, ItemSaveData]}
 ---@field flags table<string, any>
+---@field uniqueid string?
 
 
 --- Party Member data in the format it is saved to file
@@ -81,3 +82,4 @@
 ---@field spells string[]
 ---@field equipped {amulet: ItemSaveData, armor: [ItemSaveData, ItemSaveData]}
 ---@field flags table<string, any>
+---@field uniqueid string?

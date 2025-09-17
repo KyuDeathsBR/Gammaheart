@@ -13,7 +13,7 @@ function Dummy:init()
     })[Mod.selected_language]
     
     -- Battle music ("battle" is rude buster)
-    self.music = "battle"
+    self.music = "dummy"
     -- Enables the purple grid battle background
     self.background = true
     

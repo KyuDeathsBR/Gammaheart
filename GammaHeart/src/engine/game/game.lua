@@ -56,12 +56,39 @@ function Game:setPartyAllies(...)
     end
 end
 
----@param id string
+---@param id string | PartyAlly | PartyMember
 ---@return PartyAlly?
-function Game:getPartyAlly(id)
-    if self.ally_data[id] then
-        return self.ally_data[id]
+function Game:getPartyAlly(id,clone,...)
+    if clone then
+        ---@type PartyAlly|PartyMember
+        local ally = Registry.createAlly(id,...)
+        self.ally_data[ally.unique_id] = ally
+        return ally
+    else
+        if type(id) == "table" then
+            for i,v in pairs(self.ally_data) do
+                if v == id and v.unique_id == id.unique_id then
+                    return v
+                end
+            end
+        else
+            if self.ally_data[id] then
+                return self.ally_data[id]
+            else
+                for i,v in pairs(self.ally) do
+                    if v.id == id and v.unique_id then
+                        return self.ally_data[v.unique_id] or nil
+                    end
+                end
+                for i,v in pairs(self.ally) do
+                    if v.id == id and v.unique_id then
+                        return self.ally_data[v.id] or nil
+                    end
+                end
+            end
+        end
     end
+    
 end
 
 function Game:initPartyAllies()
@@ -69,6 +96,7 @@ function Game:initPartyAllies()
     for id,_ in pairs(Registry.party_allies) do
         if Registry.getPartyAlly(id) then
             self.ally_data[id] = Registry.createAlly(id)
+            self.ally_data[id].unique_id = nil
         else
             error("Attempted to add non-existent ally \"" .. id .. "\" to the party")
         end
@@ -77,11 +105,13 @@ end
 
 ---@param chara     string|PartyAlly
 ---@param index?    any
----@return any
-function Game:addPartyAlly(chara, index)
+---@param clone?    boolean
+---@return PartyAlly
+function Game:addPartyAlly(chara, index,clone)
     if type(chara) == "string" then
-        chara = self:getPartyAlly(chara)
+        chara = self:getPartyAlly(chara,clone == nil and true or clone)
     end
+    
     if index then
         table.insert(self.ally, index, chara)
     else
@@ -94,9 +124,12 @@ end
 ---@return PartyAlly?
 function Game:removePartyAlly(chara)
     if type(chara) == "string" then
-        chara = self:getPartyAlly(chara)
+        chara = self:getPartyAlly(chara,false)
     end
     Utils.removeFromTable(self.ally, chara)
+    if chara.unique_id then
+        Registry.party_allies[chara.unique_id] = nil
+    end
     return chara
 end
 
@@ -105,11 +138,11 @@ end
 function Game:hasPartyAlly(ally)
     if type(ally) == "string" then
         ---@cast ally string
-        ally = self:getPartyAlly(ally)
+        ally = self:getPartyAlly(ally,false)
     end
     if ally then
         for _,party_ally in ipairs(self.ally) do
-            if party_ally.id == ally.id then
+            if party_ally == ally or party_ally.unique_id == ally.unique_id then
                 return true
             end
         end
@@ -352,7 +385,7 @@ function Game:save(x, y)
     end
     data.ally = {}
     for _,ally in ipairs(self.ally) do
-        table.insert(data.ally, ally.id)
+        table.insert(data.ally, ally.unique_id or ally.id)
     end
     
     data.default_equip_slots = self.default_equip_slots
@@ -367,7 +400,7 @@ function Game:save(x, y)
         data.party_data[k] = v:save()
     end
     for k,v in pairs(self.ally_data) do
-        data.party_data[k] = v:save()
+        data.ally_data[k] = v:save()
     end
     
     data.recruits_data = {}
@@ -448,8 +481,12 @@ function Game:load(data, index, fade)
     end
     if data.ally_data then
         for k,v in pairs(data.ally_data) do
-            if self.ally_data[k] then
+            if self.ally_data[k] and k ~= v.uniqueid then
                 self.ally_data[k]:load(v)
+            else
+                local ally = Registry.createAlly(v.id,v.uniqueid)
+                ally:load(v)
+                self.ally_data[v.uniqueid] = ally
             end
         end
     end
@@ -466,6 +503,7 @@ function Game:load(data, index, fade)
     end
     for _,id in ipairs(data.ally or Kristal.getModOption("allies") or {}) do
         local ally = self:getPartyAlly(id)
+
         if ally then
             table.insert(self.ally, ally)
         else
@@ -882,8 +920,16 @@ end
 ---@param id string
 ---@return PartyMember?
 function Game:getPartyMember(id)
-    if self.party_data[id] then
-        return self.party_data[id]
+    if type(id) == "table" then
+        for i,v in pairs(self.party_data) do
+            if v == id then
+                return v
+            end
+        end
+    else
+        if self.party_data[id] then
+            return self.party_data[id]
+        end
     end
 end
 
@@ -981,15 +1027,22 @@ function Game:movePartyMember(chara, index)
     return chara
 end
 
----@param chara string|PartyMember
+---@param chara string|PartyMember|PartyAlly
 ---@return integer
 function Game:getPartyIndex(chara)
-    if type(chara) == "string" then
-        chara = self:getPartyMember(chara)
-    end
-    for i,party_member in ipairs(self.party) do
-        if party_member.id == chara.id then
-            return i
+    if chara then
+        if type(chara) == "string" then
+            chara = self:getPartyMember(chara) or self:getPartyAlly(chara)
+        end
+        for i,party_member in ipairs(self.party) do
+            if party_member.id == chara.id then
+                return i
+            end
+        end
+        for i,party_member in ipairs(self.ally) do
+            if party_member.id == chara.id then
+                return i + #self.party
+            end
         end
     end
     return nil
@@ -1036,7 +1089,7 @@ function Game:getSoulColor()
         return mr, mg, mb, ma or 1
     end
 
-    local chara = Game:getSoulPartyMember()
+    local chara = self:getSoulPartyMember()
 
     if chara and chara:getSoulPriority() >= 0 then
         local r, g, b, a = chara:getSoulColor()

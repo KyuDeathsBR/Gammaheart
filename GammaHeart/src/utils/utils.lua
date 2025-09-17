@@ -1568,7 +1568,10 @@ function Utils.pickMultiple(tbl, amount, sort, remove)
     for _=1,amount do
         local i = table.remove(indexes, love.math.random(#indexes))
         if remove then
-            table.insert(t, table.remove(tbl, i))
+            local removed = table.remove(tbl, i)
+            if removed then
+                table.insert(t, removed)
+            end
         else
             table.insert(t, tbl[i])
         end

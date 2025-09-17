@@ -261,8 +261,8 @@ function Encounter:getPartyPosition(index)
         x = 80
         y = 100 + (80 * (index - 1))
     elseif #Game.battle.party >= 3 then
-        x = 80 + 80 * math.floor(index/4)
-        y = 50 + (80 * ((index%4) - 1))
+        x = 80 + 80 * (math.floor((index-1)/3))/math.max((math.ceil((#Game.battle.party-6+0.3)/3))*1.2,1)
+        y = 50 + (80 * ((index-1)%3))
     end
 
     local battler = Game.battle.party[index]

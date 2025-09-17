@@ -25,7 +25,7 @@ function actor:init()
     self.default = "walk"
     
     -- Sound to play when this actor speaks (optional)
-    self.voice = nil
+    self.voice = Assets.getSound(Mod.selected_language.."_puddington_glorb") and Mod.selected_language.."_puddington_glorb" or "puddington_glorb"
     -- Path to this actor's portrait for dialogue (optional)
     self.portrait_path = nil
     -- Offset position for this actor's portrait (optional)
@@ -53,6 +53,8 @@ function actor:init()
     self.offsets = {
         -- Since the width and height is the idle sprite size, the offset is 0,0
         ["idle"] = {0, 0},
+        ["battle/idle"] = {0,10},
+        ["battle/intro"] = {0,10},
         ["walk/down"]={-13,-6},
         ["walk/up"]={-13,-6},
         ["walk/left"]={-13,-6},

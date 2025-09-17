@@ -209,10 +209,11 @@ function Input.resetBinds(gamepad, mod_id)
             ["confirm"] = {"z", "return"},
             ["cancel"] = {"x", "shift"},
             ["menu"] = {"c", "ctrl"},
-            ["console"] = {"`"},
-            ["debug_menu"] = {{"shift", "`"}},
+            ["console"] = {";"},
+            ["debug_menu"] = {{"shift", ";"}},
             ["object_selector"] = {{"ctrl", "o"}},
             ["fast_forward"] = {{"ctrl", "g"}},
+            ["snowgrave"] = {{"alt","s","g"}},
             ["mod_rebind"] = {"/"},
         }
         local gamepad_bindings = {

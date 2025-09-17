@@ -94,7 +94,7 @@ end
 ---@return PartyAlly?
 function Character:getPartyAlly()
     if self.party then
-        return Game:getPartyAlly(self.party)
+        return Game:getPartyAlly(self.party,false)
     end
 
     for _,party in pairs(Game.ally_data) do

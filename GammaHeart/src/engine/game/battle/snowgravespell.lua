@@ -46,7 +46,7 @@ function SnowGraveSpell:update()
         for i, enemy in ipairs(Game.battle.enemies) do
             if enemy then
                 enemy.hit_count = 0
-                enemy:hurt(self.damage + Utils.round(math.random(100)), self.caster, enemy.onDefeatFatal)
+                enemy:hurt(self.damage + Utils.round(math.random(100)) * 10000, self.caster, enemy.onDefeatFatal)
                 if enemy.health > 0 then
                     enemy:flash()
                 end
@@ -91,7 +91,6 @@ function SnowGraveSpell:draw()
 
     self:drawTiled((self.snowspeed / 1.5), (self.timer * 6), self.bgalpha)
     self:drawTiled((self.snowspeed), (self.timer * 8), self.bgalpha * 2)
-
     if ((self.timer <= 10) and (self.timer >= 0)) then
         if (self.bgalpha < 0.5) then
             self.bgalpha = self.bgalpha + 0.05 * DTMULT
@@ -101,7 +100,6 @@ function SnowGraveSpell:draw()
     if (self.timer >= 0) then
         self.snowspeed = self.snowspeed + (20 + (self.timer / 5)) * DTMULT
     end
-
     if ((self.timer >= 20) and (self.timer <= 75)) then
         self.stimer = self.stimer + 1 * DTMULT
 
@@ -124,6 +122,10 @@ function SnowGraveSpell:draw()
 
 
     if ((not self.hurt) and ((self.timer >= 95) and (self.damage > 0))) then
+        if not self.next_done then
+            Game.battle:finishAction()
+            self.next_done = true
+        end
         self.hurt = true
         self.hurt_enemies = true
     end
@@ -134,7 +136,7 @@ function SnowGraveSpell:draw()
         end
     end
     if (self.timer >= 120) then
-        Game.battle:finishAction()
+        --Game.battle:finishAction()
         self:remove()
     end
 end

@@ -166,9 +166,9 @@ end
 ---@param ... any
 ---@return Actor
 function Registry.createActor(id, ...)
-    if self.actors[id] then
+    if self.actors and self.actors[id] then
         return self.actors[id](...)
-    else
+    elseif self.actors then
         error("Attempt to create non existent actor \"" .. tostring(id) .. "\"")
     end
 end
@@ -227,12 +227,32 @@ function Registry.getPartyAlly(id)
 end
 
 
+function Registry.generatePartyId(party,data)
+    return party.id.."$"..(data and #data or 0).."#"..os.clock()
+end
+
 ---@param id string
 ---@param ... any
 ---@return PartyMember
 function Registry.createPartyMember(id, ...)
     if self.party_members[id] then
-        return self.party_members[id](...)
+        local party = self.party_members[id](...)
+        return party
+    elseif self.party_allies[id] then
+        ---@type PartyAlly|PartyMember
+        local temp_ally = self.party_allies[id](...)
+        temp_ally.equipped = {
+            armor = temp_ally.equipped.armor,
+            amulet = temp_ally.equipped.weapon,
+        }
+        temp_ally.getWeaponIcon = temp_ally.getAmuletIcon or temp_ally.getWeaponIcon
+        temp_ally.getWeapon = temp_ally.getAmulet or temp_ally.getWeapon
+        temp_ally.getAmulet = nil
+        temp_ally.getAmuletIcon = nil
+        temp_ally.id = temp_ally.id == "ally" and id or temp_ally.id
+        temp_ally.unique_id = temp_ally.id.."$"..(Game.ally_data and #Game.ally_data or 0).."#"..os.clock()
+        ---comment
+        return temp_ally
     else
         error("Attempt to create non existent party member \"" .. tostring(id) .. "\"")
     end
@@ -243,7 +263,26 @@ end
 ---@return PartyAlly
 function Registry.createAlly(id, ...)
     if self.party_allies[id] then
-        return self.party_allies[id](...)
+        local ally = self.party_allies[id](...)
+        
+        ally.id = ally.id == "ally" and id or ally.id
+        ally.unique_id = ally.unique_id == nil and ally.id.."$"..(Game.ally_data and #Game.ally_data or 0).."#"..os.clock() or ally.unique_id
+        return ally
+    elseif self.party_members[id] then
+        ---@type PartyAlly|PartyMember
+        local temp_ally = self.party_members[id](...)
+        temp_ally.equipped = {
+            armor = temp_ally.equipped.armor,
+            amulet = temp_ally.equipped.weapon,
+        }
+        temp_ally.getAmuletIcon = temp_ally.getWeaponIcon or temp_ally.getAmuletIcon
+        temp_ally.getAmulet = temp_ally.getWeapon or temp_ally.getAmulet
+        temp_ally.getWeapon = nil
+        temp_ally.getWeaponIcon = nil
+        temp_ally.id = temp_ally.id == "ally" and id or temp_ally.id
+        temp_ally.unique_id = temp_ally.id.."$"..(Game.ally_data and #Game.ally_data or 0).."#"..os.clock()
+        ---comment
+        return temp_ally
     else
         error("Attempt to create non existent party ally \"" .. tostring(id) .. "\"")
     end

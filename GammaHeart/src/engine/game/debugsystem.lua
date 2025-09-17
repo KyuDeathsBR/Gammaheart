@@ -13,6 +13,56 @@
 ---@overload fun(...) : DebugSystem
 local DebugSystem, super = Class(Object)
 
+function DebugSystem:snowgravethem()
+    if not Game.battle:getState() == "MENUSELECT" then
+        return
+    end
+    local doneforthatone = true
+    local damage = 0
+    for i=1,2000 do
+        if not Game.battle.party[i] then
+            break
+        end
+        doneforthatone = false
+        Game.battle.timer:afterCond(function() return doneforthatone end,function()
+            local v = Game.battle.party[i]
+            local spell = v.chara.spells[4]
+            local spell = {
+                    ["name"] = spell:getName(),
+                    ["tp"] = 0,
+                    ["unusable"] = not spell:isUsable(v.chara),
+                    ["description"] = spell:getBattleDescription(),
+                    ["party"] = spell.party,
+                    ["color"] = color,
+                    ["data"] = spell,
+                    ["callback"] = function(menu_item)
+                        Game.battle.selected_spell = menu_item
+
+                        Game.battle:pushAction("SPELL",Game.battle:getActiveEnemies(),spell,i)
+
+                    end
+            }    
+            Game.battle:pushAction("SPELL",Game.battle:getActiveEnemies(),spell,i)
+        end)
+        doneforthatone = true
+    end
+    Game.battle.timer:after(0.01,
+    function() 
+        Game.battle.selected_character_stack = {}
+        Game.battle.selected_action_stack = {}
+        Game.battle.current_action_processing = 1
+        Game.battle.current_selecting = 0
+        FAST_FORWARD_SPEED = 10
+        FAST_FORWARD = true
+        Game.battle:startProcessing()
+    end)
+    local timer = 0
+    Game.battle.timer:doWhile(function() return timer > 15 end,function()
+        timer = timer + DT
+        damage = s(Game.battle.enemies[1].max_health - Game.battle.enemies[1].health)
+    end,Kristal.Console:log(damage))
+end
+
 function DebugSystem:init()
     super.init(self, 0, 0)
     self.layer = 10000000 - 2
@@ -689,7 +739,9 @@ function DebugSystem:registerSubMenus()
     self:registerMenu("change_allies", "Change Allies", "search")
 
     for id, _ in pairs(Registry.party_members) do
-        self:registerOption("change_party", id, "Add or remove "..(_.name or id).." from the party.", function ()
+        local __ = _()
+        local name = type(__.name) == "table" and __.name[Mod.selected_language] or __.name
+        self:registerOption("change_party", id, "Add or remove "..(name or id).." from the party.", function ()
             if (Game:hasPartyMember(id)) then
                 local char = Game.world:getPartyCharacterInParty(id)
                 local first_follower_char
@@ -720,37 +772,7 @@ function DebugSystem:registerSubMenus()
         end)
     end
     
-    for id, _ in pairs(Registry.party_allies) do
-        self:registerOption("change_allies", id, "Add or remove "..(_.name or id).." from the secondary party / allies.", function ()
-            if (Game:hasPartyAlly(id)) then
-                local char = Game.world:getPartyCharacterInParty(id)
-                local first_follower_char
-                if char then
-                    if char == Game.world.player and #Game.party > 0 then
-                        for _,party in ipairs(Game.party) do
-                            if id ~= party.id then
-                                first_follower_char = Game.world:getPartyCharacterInParty(party)
-                                if first_follower_char then
-                                    first_follower_char:convertToPlayer()
-                                    break
-                                end
-                            end
-                        end
-                    end
-                    char:remove()
-                end
-                Game:removePartyAlly(id)
-            else
-                Game:addPartyAlly(id)
-                if Game.world.player then
-                    Game.world:spawnFollower(Game.ally_data[id]:getActor(), {party = id})
-                else
-                    local x, y = Game.world.camera:getPosition()
-                    Game.world:spawnPlayer(x, y, Game.ally_data[id]:getActor(), id)
-                end
-            end
-    end)
-end
+    self:registerPartyAllies()
 
     self:registerMenu("border_menu", "Border Test", "search")
     
@@ -886,6 +908,91 @@ function DebugSystem:registerDefaults()
                             Game.battle:setState("VICTORY")
                             self:closeMenu()
                         end, in_battle)
+end
+
+function DebugSystem:registerSnowgrave()
+    self:registerOption("main", "SNOWGRAVE", "THE NOELLINGS ARE COMING.", self.snowgravethem, in_battle)
+end
+
+function DebugSystem:registerPartyAllies()
+    if not self.menus["change_allies"] then return end
+    self.menus["change_allies"].options = {}
+    for id, _ in pairs(Registry.party_allies) do
+        local __ = _()
+        local name = type(__.name) == "table" and __.name[Mod.selected_language] or __.name
+        self:registerOption("change_allies", id, "Add"..(name or id).." to the secondary party / allies.", function ()     
+            local ally = Game:addPartyAlly(id)
+            if Game.world.player then
+                Game.world:spawnFollower(Game.ally_data[id]:getActor(), {party = ally.unique_id})
+            else
+                local x, y = Game.world.camera:getPosition()
+                Game.world:spawnPlayer(x, y, Game.ally_data[id]:getActor(), ally.unique_id)
+            end
+        end)
+    end
+    for id, _ in pairs(Registry.party_members) do
+        local __ = _()
+        local name = type(__.name) == "table" and __.name[Mod.selected_language] or __.name
+        self:registerOption("change_allies", id.." (Add as an Ally)", "Add"..(name or id).." to the secondary party / allies.", function ()     
+            local ally = Game:addPartyAlly(id)
+            if Game.world.player then
+                Game.world:spawnFollower(Game.party_data[id]:getActor(), {party = ally.unique_id})
+            else
+                local x, y = Game.world.camera:getPosition()
+                Game.world:spawnPlayer(x, y, Game.party_data[id]:getActor(), ally.unique_id)
+            end
+        end)
+    end
+
+    if Game.ally then
+        for _, partyally in pairs(Game.ally) do
+            self:registerOption("change_allies", (tostring(partyally.unique_id or tostring(partyally.id))).." (Remove)", "Remove "..(partyally.name[Mod.selected_language] or tostring(partyally.id)).." from the secondary party / allies.", function ()     
+                local char = Game.world:getPartyCharacterInParty(partyally,true)
+                local first_follower_char
+                if char then
+                    if char == Game.world.player and #Game.party > 0 or #Game.ally > 0 then
+                        for _,party in ipairs(Game.party) do
+                            if partyally.id ~= party.id then
+                                first_follower_char = Game.world:getPartyCharacterInParty(party)
+                                if first_follower_char then
+                                    first_follower_char:convertToPlayer()
+                                    break
+                                end
+                            end
+                        end
+                        if not first_follower_char then
+                            for _,party in ipairs(Game.ally) do
+                                if partyally.id ~= party.id or partyally.unique_id ~= party.unique_id then
+                                    table.remove(Game.ally,_)
+                                    Game.party[1] = party
+                                    first_follower_char = Game.world:getPartyCharacterInParty(party)
+                                    if first_follower_char then
+                                        first_follower_char:convertToPlayer()
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    if char:includes(Follower) then
+                        for i,v in ipairs(Game.world.followers) do
+                            if v.id == char.party then
+                                table.remove(Game.world.followers,i)
+                                break
+                            end
+                        end
+                    end
+                    Game.world:removeChild(char)
+                end
+                if partyally.unique_id then
+                    Game.ally_data[partyally.unique_id] = nil
+                else
+                    Game:removePartyAlly(partyally)
+                end
+                
+            end)
+        end
+    end
 end
 
 function DebugSystem:getValidOptions()
@@ -1288,6 +1395,19 @@ function DebugSystem:isMenuOpen()
 end
 
 function DebugSystem:update()
+    self.currentallycount = Game.ally and #Game.ally or 0
+    self.lastallycount = self.lastallycount or Game.ally and #Game.ally or 0
+    self.last_party_ids = self.last_party_ids or {}
+    if self.lastallycount ~= self.currentallycount then
+        self:registerPartyAllies()
+    elseif Game.ally then
+        for i,v in next, Game.ally, nil do
+            if v.unique_id ~= self.last_party_ids[i] then
+                self:registerPartyAllies()
+                self.last_party_ids[i] = v.unique_id
+            end
+        end
+    end
     local stage = self:getStage()
 
     self.release_timer = self.release_timer + (DT * (stage and stage.timescale or 1))
@@ -1367,6 +1487,7 @@ function DebugSystem:update()
             end
         end
     end
+    self.lastallycount = Game.ally and #Game.ally or 0
 end
 
 function DebugSystem:onWheelMoved(x, y)

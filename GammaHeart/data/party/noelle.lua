@@ -7,7 +7,7 @@ function character:init()
     self.name = "Noelle"
 
     -- Actor (handles sprites)
-    self:setActor("noelle")
+    self:setActor("noelle_lw")
     self:setLightActor("noelle_lw")
 
     -- Display level (saved to the save file)
@@ -33,6 +33,7 @@ function character:init()
     self:addSpell("heal_prayer")
     self:addSpell("sleep_mist")
     self:addSpell("ice_shock")
+    self:addSpell("snowgrave")
 
     -- Current health (saved to the save file)
     self.health = 90

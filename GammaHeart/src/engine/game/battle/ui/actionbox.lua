@@ -1,4 +1,5 @@
 ---@class ActionBox : Object
+---@field buttons ActionButton[]
 ---@overload fun(...) : ActionBox
 local ActionBox, super = Class(Object)
 
@@ -13,7 +14,7 @@ function ActionBox:init(x, y, index, battler)
     self.selected_button = 1
 
     self.revert_to = 40
-
+    self.return_point = 0
     self.data_offset = 0
 
     self.box = ActionBoxDisplay(self)
@@ -48,7 +49,7 @@ function ActionBox:createButtons()
     for _,button in ipairs(self.buttons or {}) do
         button:remove()
     end
-
+    ---@type ActionButton[]
     self.buttons = {}
 
     local btn_types = {"fight", "act", "magic", "item", "spare", "defend"}
@@ -111,16 +112,34 @@ function ActionBox:update()
     self.selection_siner = self.selection_siner + 2 * DTMULT
 
     if Game.battle.current_selecting == self.index then
+        if self.return_point < 0 then
+            if self.box.y <= -64 then self.box.y = self.box.y + 12 * DTMULT end
+            if self.box.y <= -56 then self.box.y = self.box.y + 8 * DTMULT end
+            if self.box.y <= -48 then self.box.y = self.box.y + 6 * DTMULT end
+            if self.box.y < -32 then self.box.y = self.box.y + 4 * DTMULT end
+        end
         if self.box.y > -32 then self.box.y = self.box.y - 2 * DTMULT end
         if self.box.y > -24 then self.box.y = self.box.y - 4 * DTMULT end
         if self.box.y > -16 then self.box.y = self.box.y - 6 * DTMULT end
         if self.box.y > -8  then self.box.y = self.box.y - 8 * DTMULT end
         -- originally '= -64' but that was an oversight by toby
-        if self.box.y < -32 then self.box.y = -32 end
+        if self.box.y < -32+self.return_point then self.box.y = -32+self.return_point end
+    elseif Game.battle.current_selecting > self.index then
+        if self.box.y > -32 + self.return_point then self.box.y = self.box.y - 2 * DTMULT end
+        if self.box.y > -24 + self.return_point then self.box.y = self.box.y - 4 * DTMULT end
+        if self.box.y > -16 + self.return_point then self.box.y = self.box.y - 6 * DTMULT end
+        if self.box.y > -8  + self.return_point then self.box.y = self.box.y - 8 * DTMULT end
+        -- originally '= -64' but that was an oversight by toby
+        if self.box.y < -32 + self.return_point then self.box.y = -32+self.return_point end
     elseif self.box.y < -14 then
         self.box.y = self.box.y + 15 * DTMULT
     else
         self.box.y = 0
+    end
+    if self.return_point < 0 then 
+        for i,v in ipairs(self.buttons) do
+            v.visible = Game.battle.current_selecting <= self.index
+        end
     end
 
     self.head_sprite.y = 11 - self.data_offset + self.head_offset_y
@@ -198,7 +217,7 @@ end
 function ActionBox:drawSelectionMatrix()
     -- Draw the background of the selection matrix
     Draw.setColor(0, 0, 0, 1)
-    love.graphics.rectangle("fill", 2, 2, 209, 35)
+    love.graphics.rectangle("fill", 2, 2+self.box.y, 209, 35-self.box.y)
 
     if Game.battle.current_selecting == self.index then
         local r,g,b,a = self.battler.chara:getColor()

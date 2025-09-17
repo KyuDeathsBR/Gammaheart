@@ -50,8 +50,17 @@ function BattleUI:init()
         box_gap = 0
     end
 
+    self.secondary_team_size = (#Game.battle.party-#Game.party)
+    self.main_team_size = (#Game.battle.party-self.secondary_team_size)
     for index,battler in ipairs(Game.battle.party) do
-        local action_box = ActionBox(size_offset+ (index - 1) * (213 + box_gap), 0, index, battler)
+        local xoff = index <= self.main_team_size and function(val)
+            return (val%self.main_team_size)%3
+        end or function(val)
+            return ((val-self.main_team_size)%self.secondary_team_size)%3
+        end
+        local action_box = ActionBox(size_offset+ xoff(index - 1) * (213 + box_gap), 0, index, battler)
+        action_box.return_point = index <= self.main_team_size and -30-4*math.floor(math.min(self.secondary_team_size/3,1)) or math.min((-30+math.floor(index/3+1)*4)-4*math.floor(math.min(self.secondary_team_size/3,1)),12)
+        action_box.visible = index <= self.main_team_size and Game.battle.current_selecting <= self.main_team_size
         self:addChild(action_box)
         table.insert(self.action_boxes, action_box)
         battler.chara:onActionBox(action_box, false)
@@ -94,7 +103,9 @@ function BattleUI:clearEncounterText()
 end
 
 function BattleUI:beginAttack()
-    local attack_order = Utils.pickMultiple(Game.battle.normal_attackers, #Game.battle.normal_attackers)
+    self.temp_attacker_table = self.temp_attacker_table or Utils.copy(Game.battle.normal_attackers,false) or {}
+    if #self.temp_attacker_table == 0 then return end
+    local attack_order = Utils.pickMultiple(self.temp_attacker_table, math.min(3,#self.temp_attacker_table),nil,true)
 
     for _,box in ipairs(self.attack_boxes) do
         box:remove()
@@ -103,17 +114,28 @@ function BattleUI:beginAttack()
 
     local last_offset = -1
     local offset = 0
-    for i = 1, #attack_order do
+    local indexes = Utils.getKeys(attack_order)
+    table.sort(indexes,function(a,b)
+        local id1 = attack_order[a].chara.id
+        local id2 = attack_order[b].chara.id
+        if attack_order[a].chara.unique_id then
+            id1 = attack_order[a].chara.unique_id
+        end
+        if attack_order[b].chara.unique_id then
+            id2 = attack_order[b].chara.unique_id
+        end
+        return a and b and Game.battle:getPartyIndex(id1) < Game.battle:getPartyIndex(id2)
+    end)
+    for _,index in ipairs(indexes) do
         offset = offset + last_offset
 
-        local battler = attack_order[i]
-        local index = Game.battle:getPartyIndex(battler.chara.id)
+        local battler = attack_order[index]
         local attack_box = AttackBox(battler, 30 + offset, index, 0, 40 + (38 * (index - 1)))
         attack_box.layer = -10 + (index * 0.01)
         self:addChild(attack_box)
         table.insert(self.attack_boxes, attack_box)
 
-        if i < #attack_order and last_offset ~= 0 then
+        if index and index < #attack_order and last_offset ~= 0 then
             last_offset = Utils.pick{0, 10, 15}
         else
             last_offset = Utils.pick{10, 15}
@@ -125,6 +147,7 @@ end
 
 function BattleUI:endAttack()
     Game.battle.cancel_attack = false
+    self.attacking = false
     for _,box in ipairs(self.attack_boxes) do
         box:endAttack()
     end
@@ -191,12 +214,24 @@ function BattleUI:update()
         self.y = lower - self.animation_y
 
         for _, box in ipairs(self.action_boxes) do
-            if not self.animate_out then
-                box.data_offset = self.animation_y - target
-            else
-                box.data_offset = self.y - self.animation_y_lag
+            ---@cast box ActionBox
+            local subcheck1 = _ <= self.main_team_size and Game.battle.current_selecting <= self.main_team_size
+            local check = (_ <= self.main_team_size and Game.battle.current_selecting <= self.main_team_size) or (_-self.main_team_size <= self.secondary_team_size and Game.battle.current_selecting > self.main_team_size)
+            if check then 
+                if not self.animate_out then
+                    box.data_offset = self.animation_y - target
+                else
+                    box.data_offset = self.y - self.animation_y_lag
+                end
             end
         end
+    end
+
+    for _,box in ipairs(self.action_boxes) do
+        local subcheck1 = _ <= self.main_team_size and Game.battle.current_selecting <= self.main_team_size
+        local subcheck2 = _-self.main_team_size <= self.secondary_team_size and Game.battle.current_selecting > self.main_team_size
+        local check = subcheck1 or subcheck2 and _-self.main_team_size <= 3*(math.ceil(Game.battle.current_selecting-self.main_team_size/3))
+        box.visible = check
     end
 
     if self.attacking then

@@ -31,6 +31,21 @@ function spell:getTPCost(chara)
     return cost
 end
 
+function spell:getCastMessage(user, target)
+    return "* "..user.chara:getName().." cast "..self:getCastName().."![next]"
+end
+
+function spell:onStart(user, target)
+    Game.battle:battleText(self:getCastMessage(user, target),nil,{auto = true,advance = true})
+    user:setAnimation(self:getCastAnimation(), function()
+        Game.battle:clearActionIcon(user)
+        local result = self:onCast(user, target)
+        if result or result == nil then
+            Game.battle:finishActionBy(user)
+        end
+    end)
+end
+
 function spell:onCast(user, target)
     local object = SnowGraveSpell(user)
     object.damage = self:getDamage(user, target)

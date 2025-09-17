@@ -14,7 +14,7 @@ function actor:init()
     self.hitbox = {0, 25, 19, 14}
 
     -- Color for this actor used in outline areas (optional, defaults to red)
-    self.color = {1, 0, 0}
+    self.color = {1, 1, 0}
 
     -- Whether this actor flips horizontally (optional, values are "right" or "left", indicating the flip direction)
     self.flip = nil
@@ -42,6 +42,8 @@ function actor:init()
         -- Looping animation with 0.25 seconds between each frame
         -- (even though there's only 1 idle frame)
         ["idle"] = {"idle", 0.25, true},
+        ["battle/idle"] = {"battle/idle",0.25,true},
+        ["battle/intro"] = {"battle/intro",0.25,true},
     }
 
     -- Table of sprite offsets (indexed by sprite name)
@@ -50,5 +52,7 @@ function actor:init()
         ["idle"] = {0, 0},
     }
 end
+
+
 
 return actor

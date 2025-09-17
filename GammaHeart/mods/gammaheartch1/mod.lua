@@ -8,6 +8,9 @@ function Mod:init()
         "town",
     }
     self.mode = "LIGHT"
+    self.keybinds = {
+            {id="snowgrave",keys={"alt","s","g"}},
+        }
 end
 
 ---comment
@@ -33,7 +36,7 @@ end
 ---@param map Map
 function Mod:onMapCollisionLoad(map)
     for i,key in ipairs(Utils.getKeys(Game.flags)) do
-        if key:match("$WorldCollisions/"..map.name) then
+        if key:match("$WorldCollisions/"..(map.name or "")) then
             local name, path = unpack(Utils.split(key:gsub("$WorldCollisions/"..map.name.."/",""),"/"),1,2)
             local subpaths = Utils.split(key:gsub("$WorldCollisions/"..map.name.."/",""),"/")
             Utils.removeFromTable(subpaths,name)

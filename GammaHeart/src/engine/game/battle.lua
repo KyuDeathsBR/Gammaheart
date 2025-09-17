@@ -32,7 +32,7 @@
 ---@field cutscene                  BattleCutscene?                 The active battle cutscene, if it exists - see [`Battle:startCutscene()`](lua://Battle.startCutscene) or [`Battle:startActCutscene()`](lua://Battle.startActCutscene) for how to start cutscenes
 ---
 ---@field turn_count                integer                         The current turn number
----
+---@field current_encounter_options table<string,any>
 ---@field battle_ui                 BattleUI
 ---@field tension_bar               TensionBar
 ---
@@ -198,18 +198,6 @@ function Battle:init()
     self.darkify = false
 end
 
----comment
----@param party_member PartyMember | PartyBattler
-function Battle:addPartyBattler(party_member,x,y)
-    local chara_x, chara_y = x or 0,y or -1000
-    local chara_battler = PartyBattler(party_member, chara_x, chara_y)
-    chara_battler:setAnimation("battle/transition")
-    self:addChild(chara_battler)
-    table.insert(self.party, chara_battler)
-    table.insert(self.party_beginning_positions, {chara_x, chara_y})
-    return chara_battler
-end
-
 function Battle:createPartyBattlers()
     for i = 1, math.min(3, #Game.party) do
         local party_member = Game.party[i]
@@ -252,31 +240,32 @@ function Battle:createPartyBattlers()
             end
         end
     end
-    for i = 1, math.min(3, #Game.ally) do
-        local party_ally = Game.ally[i]
 
-        if Game.world.player and Game.world.player.visible and Game.world.player.actor.id == party_ally:getActor().id then
+    for i = 1, #Game.ally do
+        local party_member = Game.ally[i]
+
+        if Game.world.player and Game.world.player.visible and Game.world.player.actor.id == party_member:getActor().id then
             -- Create the player battler
             local player_x, player_y = Game.world.player:getScreenPos()
-            local player_battler = PartyBattler(party_ally, player_x, player_y)
+            local player_battler = PartyBattler(party_member, player_x, player_y)
             player_battler:setAnimation("battle/transition")
             self:addChild(player_battler)
             table.insert(self.party,player_battler)
             table.insert(self.party_beginning_positions, {player_x, player_y})
-            self.party_world_characters[party_ally.id] = Game.world.player
+            self.party_world_characters[party_member.id] = Game.world.player
 
             Game.world.player.visible = false
         else
             local found = false
             for _,follower in ipairs(Game.world.followers) do
-                if follower.visible and follower.actor.id == party_ally:getActor().id then
+                if follower.visible and follower.actor.id == party_member:getActor().id then
                     local chara_x, chara_y = follower:getScreenPos()
-                    local chara_battler = PartyBattler(party_ally, chara_x, chara_y)
+                    local chara_battler = PartyBattler(party_member, chara_x, chara_y)
                     chara_battler:setAnimation("battle/transition")
                     self:addChild(chara_battler)
                     table.insert(self.party, chara_battler)
                     table.insert(self.party_beginning_positions, {chara_x, chara_y})
-                    self.party_world_characters[party_ally.id] = follower
+                    self.party_world_characters[party_member.id] = follower
 
                     follower.visible = false
 
@@ -285,7 +274,7 @@ function Battle:createPartyBattlers()
                 end
             end
             if not found then
-                local chara_battler = PartyBattler(party_ally, SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
+                local chara_battler = PartyBattler(party_member, SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
                 chara_battler:setAnimation("battle/transition")
                 self:addChild(chara_battler)
                 table.insert(self.party, chara_battler)
@@ -1137,8 +1126,8 @@ function Battle:processAction(action)
         return false
 
     elseif action.action == "ATTACK" or action.action == "AUTOATTACK" then
-        local attacksound = battler.chara:includes(PartyAlly) and battler.chara:getAmulet() and battler.chara:getAmulet():getAttackSound(battler, enemy, action.points) or battler.chara:includes(PartyMember) and battler.chara:getWeapon() and battler.chara:getWeapon():getAttackSound(battler, enemy, action.points) or battler.chara:getAttackSound()
-        local attackpitch  = battler.chara:includes(PartyAlly) and battler.chara:getAmulet() and battler.chara:getAmulet():getAttackPitch(battler, enemy, action.points) or battler.chara:includes(PartyMember) and battler.chara:getWeapon() and battler.chara:getWeapon():getAttackPitch(battler, enemy, action.points) or battler.chara:getAttackPitch()
+        local attacksound = battler.chara.getWeapon and battler.chara:getWeapon() and battler.chara:getWeapon():getAttackSound(battler, enemy, action.points) or battler.chara.getAmulet and battler.chara:getAmulet() and battler.chara:getAmulet():getAttackSound(battler, enemy, action.points) or battler.chara:getAttackSound()
+        local attackpitch  = battler.chara.getWeapon and battler.chara:getWeapon() and battler.chara:getWeapon():getAttackPitch(battler, enemy, action.points) or battler.chara.getAmulet and battler.chara:getAmulet() and battler.chara:getAmulet():getAttackPitch(battler, enemy, action.points) or battler.chara:getAttackPitch()
         local src = Assets.stopAndPlaySound(attacksound or "laz_c")
         src:setPitch(attackpitch or 1)
 
@@ -1182,7 +1171,8 @@ function Battle:processAction(action)
             if damage > 0 then
                 Game:giveTension(Utils.round(enemy:getAttackTension(action.points or 100)))
 
-                local attacksprite = battler.chara:includes(PartyAlly) and battler.chara:getAmulet() and battler.chara:getAmulet():getAttackSprite(battler, enemy, action.points) or battler.chara:includes(PartyMember) and battler.chara:getWeapon() and battler.chara:getWeapon():getAttackSprite(battler, enemy, action.points) or battler.chara:getAttackSprite()
+                local weapon = (battler.chara.getWeapon and battler.chara:getWeapon() or battler.chara:getAmulet())
+                local attacksprite = weapon and weapon:getAttackSprite(battler, enemy, action.points) or battler.chara:getAttackSprite()
                 local dmg_sprite = Sprite(attacksprite or "effects/attack/cut")
                 dmg_sprite:setOrigin(0.5, 0.5)
                 if crit then
@@ -1487,7 +1477,9 @@ function Battle:endActionAnimation(battler, action, callback)
         -- Reset the head sprite
         local box = self.battle_ui.action_boxes[self:getPartyIndex(battler.chara.id)]
         --box:setHeadIcon("head")
-        box:resetHeadIcon()
+        if box then
+            box:resetHeadIcon()
+        end
         if _callback then
             _callback()
         end
@@ -1621,7 +1613,7 @@ function Battle:commitAction(battler, action_type, target, data, extra)
         tp_diff = Utils.clamp(-data.tp, -Game:getTension(), Game:getMaxTension() - Game:getTension())
     end
 
-    local party_id = self:getPartyIndex(battler.chara.id)
+    local party_id = battler.chara.unique_id and self:getPartyIndex(battler.chara.unique_id) or self:getPartyIndex(battler.chara.id)
 
     -- Dont commit action for an inactive party member
     if not battler:isActive() then return end
@@ -1812,7 +1804,9 @@ end
 ---@return integer?
 function Battle:getPartyIndex(string_id)
     for index, battler in ipairs(self.party) do
-        if battler.chara.id == string_id then
+        if battler.chara.unique_id == nil and battler.chara.id == string_id then
+            return index
+        elseif battler.chara.unique_id == string_id then
             return index
         end
     end
@@ -1824,7 +1818,9 @@ end
 ---@return PartyBattler?
 function Battle:getPartyBattler(string_id)
     for _, battler in ipairs(self.party) do
-        if battler.chara.id == string_id then
+        if battler.chara.unique_id == nil and battler.chara.id == string_id then
+            return battler
+        elseif battler.chara.unique_id == string_id then
             return battler
         end
     end
@@ -2128,7 +2124,7 @@ function Battle:nextParty()
     local last_selected = self.current_selecting
     self.current_selecting = (self.current_selecting % #self.party) + 1
     while self.current_selecting ~= last_selected do
-        if not self:hasAction(self.current_selecting) and self.party[self.current_selecting]:isActive() then
+        if not self:hasAction(self.current_selecting) and self.party[self.current_selecting] and self.party[self.current_selecting]:isActive() then
             all_done = false
             break
         end
@@ -2248,14 +2244,21 @@ function Battle:nextTurn()
         end
         if self.state == "INTRO" or self.state_reason == "INTRO" or not self.seen_encounter_text then
             self.seen_encounter_text = true
-            self.battle_ui.current_encounter_text, self.battle_ui.options = unpack(type(self.encounter.text) == "string" and {self.encounter.text,nil} or self.encounter.text)
+            self.battle_ui.current_encounter_text, self.battle_ui.current_encounter_options = unpack(type(self.encounter.text) == "string" and {self.encounter.text,{}} or self.encounter.text)
         else
-            self.battle_ui.current_encounter_text, self.battle_ui.options = self:getEncounterText()
+            self.battle_ui.current_encounter_text, self.battle_ui.current_encounter_options = unpack(type(self:getEncounterText()) == "string" and {self:getEncounterText(),{}} or self:getEncounterText())
         end
         self.battle_ui.encounter_text:setText(self.battle_ui.current_encounter_text)
-        if self.battle_ui.options and self.battle_ui.options["reactions"] then
-            for id,react in pairs(self.battle_ui.options["reactions"]) do
-                Game.battle.battle_ui.encounter_text:addReaction(id, react[1], react[2], react[3], react[4], react[5])
+        local convert = {
+            reactions = function(t)
+                for i,v in next,t do
+                    self.battle_ui.encounter_text:addReaction(i,v[1],v[2],v[3],v[4],v[5])
+                end
+            end
+        }
+        for i,v in next,self.battle_ui.current_encounter_options do
+            if convert[i] then
+                convert[i](v)
             end
         end
     end
@@ -2375,7 +2378,8 @@ end
 --- Sets the current message in the battlebox and moves to the `BATTLETEXT` state until it is advanced, where it returns to the previous state by default
 ---@param text string[]|string              The text to set
 ---@param post_func? fun():boolean|string   When the text is advanced, the name of the state to move to, or a function to run
-function Battle:battleText(text,post_func)
+---@param options? table<string,any>        Optional options source trust me bro
+function Battle:battleText(text,post_func,options)
     local target_state = self:getState()
 
     self.battle_ui.encounter_text:setText(text, function()
@@ -2387,8 +2391,21 @@ function Battle:battleText(text,post_func)
         end
         self:setState(target_state)
     end)
-    self.battle_ui.encounter_text:setAdvance(true)
-
+    if options then
+        self.battle_ui.encounter_text:setAdvance(true)
+    else
+        local convert = {
+            auto = "auto_advance",
+            advance = "can_advance",
+        }
+        if options then
+            for i,v in next,options do
+                if self.battle_ui.encounter_text[convert[i]] ~= nil then
+                    self.battle_ui.encounter_text[convert[i]] = v
+                end
+            end
+        end
+    end
     self:setState("BATTLETEXT")
 end
 
@@ -2401,6 +2418,18 @@ end
 ---@return boolean?
 function Battle:hasCutscene()
     return self.cutscene and not self.cutscene.ended
+end
+
+function Battle:addPartyBattler(party_member,player_x,player_y,map_char)
+    local player_battler = PartyBattler(party_member, player_x, player_y)
+    player_battler:setAnimation("battle/transition")
+    self:addChild(player_battler)
+    table.insert(self.party,player_battler)
+    table.insert(self.party_beginning_positions, {player_x, player_y})
+    self.party_world_characters[party_member.id] = map_char
+
+    Game.world.player.visible = false
+    return player_battler
 end
 
 --- Starts a cutscene in battle \
@@ -2462,6 +2491,7 @@ function Battle:sortChildren()
 end
 
 function Battle:update()
+
     for _,enemy in ipairs(self.enemies_to_remove) do
         Utils.removeFromTable(self.enemies, enemy)
         local enemy_y = Utils.getKey(self.enemies_index, enemy)
@@ -2713,6 +2743,7 @@ function Battle:updateAttacking()
         end
 
         local all_done = true
+        self.completed_attacks = self.completed_attacks or {}
         for _,attack in ipairs(self.battle_ui.attack_boxes) do
             if not attack.attacked and attack.fade_rect.alpha < 1 then
                 local close = attack:getClose()
@@ -2728,6 +2759,19 @@ function Battle:updateAttacking()
                 else
                     all_done = false
                 end
+            elseif attack.attacked then
+                local _check = true
+                attack.removing = true
+                if #self.completed_attacks > 0 then
+                    for i,v in next,self.completed_attacks do
+                        if v == attack then
+                            _check = false
+                        end
+                    end
+                end
+                if _check then
+                    table.insert(self.completed_attacks,attack)
+                end
             end
         end
 
@@ -2735,8 +2779,27 @@ function Battle:updateAttacking()
             all_done = false
         end
 
-        if all_done then
+        if all_done and #self.battle_ui.temp_attacker_table == 0 and self.completed_everything and self:allActionsDone() then
             self.attack_done = true
+            self:finishAllActions()
+            self.completed_attacks = {}
+            self.battle_ui.temp_attacker_table = null
+            Kristal.Console:log("CHECK0")
+            self.completed_everything = false
+            Game.battle.timer:after(0.1,function()
+                self.attack_done = false
+            end)
+        else
+            if #self.battle_ui.temp_attacker_table > 0 and #self.completed_attacks > 0 and #self.completed_attacks >= #self.battle_ui.attack_boxes then
+                self.completed_attacks = {}
+                --Kristal.Console:log("CHECK1")
+            end
+            if all_done and (not self.battle_ui.temp_attacker_table or #self.battle_ui.temp_attacker_table == 0) and #self.battle_ui.attack_boxes > 0 then
+                if (self.completed_everything == false) then
+                    Kristal.Console:log("Log Time!\nalldone -> "..(all_done and "true" or "false"))
+                end
+                self.completed_everything = true
+            end
         end
     else
         if self:allActionsDone() then
@@ -3080,6 +3143,11 @@ function Battle:onKeyPressed(key)
         if key == "n" then
             NOCLIP = not NOCLIP
         end
+    --elseif Kristal.Config["debug"] then
+    --    if Input.alt() and Input.keyPressed("s",false) and Input.keyPressed("g",false) then
+    --        DebugSystem:snowgravethem()
+    --        return
+    --    end
     end
 
     if self.state == "MENUSELECT" then

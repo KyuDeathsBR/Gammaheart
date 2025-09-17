@@ -162,7 +162,7 @@ function Battle:onStateChange(old,new)
                     local dialogue = enemy:getEnemyDialogue()
                     if dialogue then
                         any_dialogue = true
-                        local bubble = enemy:spawnSpeechBubble(dialogue)
+                        local bubble = enemy:spawnSpeechBubble(dialogue,{actor = enemy.actor})
                         table.insert(self.enemy_dialogue, bubble)
                     end
                 end
@@ -218,7 +218,9 @@ function Battle:onStateChange(old,new)
             battler:setAnimation("battle/victory")
 
             local box = self.battle_ui.action_boxes[self:getPartyIndex(battler.chara.id)]
-            box:resetHeadIcon()
+            if box then
+                box:resetHeadIcon()
+            end
         end
 
         self.money = self.money + (math.floor(((Game:getTension() * 2.5) / 10)) * Game.chapter)
