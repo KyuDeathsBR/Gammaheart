@@ -129,7 +129,8 @@ end
 function ActionBox:update()
     self.selection_siner = self.selection_siner + 2 * DTMULT
     local total = Utils.contains(Game.battle.state,"SELECT") and Game.battle.current_selecting or ({
-        ACTING = Game.battle.current_action_index,
+        ACTING = Game.battle.completed_attacks and #Game.battle.completed_attacks or 1,
+        ATTACKING = Game.battle.current_action_index,
         BATTLETEXT = Game.battle.current_action_index
     })[Game.battle.state] or 0
     local final_x = (self.index - math.max(total,1)) * 213

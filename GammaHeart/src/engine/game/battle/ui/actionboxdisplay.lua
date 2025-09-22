@@ -36,9 +36,9 @@ function ActionBoxDisplay:draw()
     local total = Utils.contains(Game.battle.state,"SELECT") and Game.battle.current_selecting or ({
         ACTING = Game.battle.current_action_index,
         ATTACKING = self.actbox.index,
-        BATTLETEXT = Game.battle.current_action_index
+        BATTLETEXT = self.actbox.index
     })[Game.battle.state] or 0
-    local check1 = (not Utils.containsValue({"ATTACKING","ACTIONSELECT","ENEMYSELECT","MENUSELECT","INTRO","TRANSITION","ACTING","BATTLETEXT"},Game.battle.state)) or (total > #Game.battle.party or total <= 0)
+    local check1 = (not Utils.containsValue({"ATTACKING","PARTYSELECT","ACTIONSELECT","ENEMYSELECT","MENUSELECT","INTRO","TRANSITION","ACTING","BATTLETEXT"},Game.battle.state)) or (total > #Game.battle.party or total <= 0)
     if total == self.actbox.index and self.animation ~= "open" then
         self:setAnimation("open")
     elseif total ~= 0 and total < self.actbox.index and self.animation ~= "close" and self.animation ~= "closed"  then
