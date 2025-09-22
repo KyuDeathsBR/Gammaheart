@@ -11,6 +11,8 @@ function Dummy:init()
         self.naayi = Game.battle:addPartyBattler(Game:getPartyMember("naayi"),0,640,self.mapNaayi) or Game.battle:addPartyBattler(Game:getPartyAlly("naayi"),0,640,self.mapNaayi) or Game.battle:addPartyBattler(Registry.createAlly("naayi"),0,640,self.mapNaayi)
         self.naayi.chara.mode = Mod.mode
         self.naayi.chara:onModeChange(nil,nil,self.naayi)
+    else
+        self.naayi = self.hasnaayi and Game:getPartyMember("naayi")
     end
     super.init(self)
     -- Text displayed at the bottom of the screen at the start of the encounter
