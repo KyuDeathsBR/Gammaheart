@@ -10,7 +10,7 @@ function ActionBoxDisplay:init(actbox, x, y)
     super.init(self, x, y)
 
     self.font = Assets.getFont("smallnumbers")
-    self.sprite_anims = {path="open_box",open={{1,2,3,4},1/12,false,"opened"},opened={{4},1/12,true},close={{4,3,2,1},1/12,false,"closed"},closed={{1},1/12,true}}
+    self.sprite_anims = {path="open_box",open={{1,2,3,4},1/12,false,"opened"},mid={{3},1/12,true},defend={{1,2,3},1/12,false},defendend={{3,2,1},1/12,false},opened={{4},1/12,true},close={{4,3,2,1},1/12,false,"closed"},closed={{1},1/12,true}}
     self.sprite = Sprite(nil,x,y,nil,nil,"ui/battle/player")
     self.sprite:setScaleOrigin(0,1.2)
     self.sprite.scale_x = 2
@@ -24,6 +24,7 @@ end
 ---Sets the sprite, if there is another sprite after it loads that sprite too.
 ---@param id string
 function ActionBoxDisplay:setAnimation(id)
+    if self.animation == id then return end
     for i, value in pairs(self.sprite_anims) do
         if i ~= "path" and id == i then
             self.sprite:setAnimation({self.sprite_anims.path,value[2],value[3],frames=value[1]})
@@ -38,17 +39,25 @@ function ActionBoxDisplay:draw()
         ATTACKING = self.actbox.index,
         BATTLETEXT = self.actbox.index
     })[Game.battle.state] or 0
-    local check1 = (not Utils.containsValue({"ATTACKING","PARTYSELECT","ACTIONSELECT","ENEMYSELECT","MENUSELECT","INTRO","TRANSITION","ACTING","BATTLETEXT"},Game.battle.state)) or (total > #Game.battle.party or total <= 0)
-    if total == self.actbox.index and self.animation ~= "open" then
-        self:setAnimation("open")
-    elseif total ~= 0 and total < self.actbox.index and self.animation ~= "close" and self.animation ~= "closed"  then
-        if self.animation == "open" then
+    local check1 = (not Utils.containsValue({"DEFENDING","ATTACKING","PARTYSELECT","DEFENDINGBEGIN","DEFENDINGEND","ACTIONSELECT","ENEMYSELECT","MENUSELECT","INTRO","TRANSITION","ACTING","BATTLETEXT"},Game.battle.state)) or (total > #Game.battle.party or total <= 0)
+    if Game.battle.state == "DEFENDING" then
+        self:setAnimation(self.actbox.battler.targeted and "mid" or "close")
+    elseif Game.battle.state == "DEFENDINGBEGIN" then
+        self:setAnimation(self.actbox.battler.targeted and "defend" or "close")
+    elseif Game.battle.state == "DEFENDINGEND" then
+        self:setAnimation(self.actbox.battler.targeted and "defendend" or "close")
+    else
+        if total == self.actbox.index and self.animation ~= "open" then
+            self:setAnimation("open")
+        elseif total ~= 0 and total < self.actbox.index and self.animation ~= "close" and self.animation ~= "closed"  then
+            if self.animation == "open" then
+                self:setAnimation("close")
+            else
+                self:setAnimation("closed")
+            end
+        elseif check1 and self.animation ~= nil and self.animation ~= "close" then
             self:setAnimation("close")
-        else
-            self:setAnimation("closed")
         end
-    elseif check1 and self.animation ~= nil and self.animation ~= "close" then
-        self:setAnimation("close")
     end
     --[[if Game.battle.current_selecting == self.actbox.index then
         Draw.setColor(self.actbox.battler.chara:getColor())

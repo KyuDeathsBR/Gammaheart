@@ -98,6 +98,7 @@ function ActionBox:setHeadIcon(icon)
     self.force_head_sprite = true
 
     local full_icon = self.battler.chara:getHeadIcons().."/"..icon
+    Kristal.Console:log(full_icon)
     if self.head_sprite:hasSprite(full_icon) then
         self.head_sprite:setAnimation({full_icon,1/12,true})
     else
@@ -140,7 +141,7 @@ function ActionBox:update()
     self.x = Utils.approach(self.x,final_x,math.abs(final_x-self.x)/24)
     if self.return_point < 0 then 
         for i,v in ipairs(self.buttons) do
-            v.visible = Game.battle.current_selecting <= self.index
+            v.visible = (self.box.animation and not Utils.containsValue({"mid","defend","defendend"},self.box.animation)) and Game.battle.current_selecting <= self.index
         end
     end
 

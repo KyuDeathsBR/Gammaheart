@@ -536,6 +536,9 @@ function Battle:onStateChange(old,new)
         local active_enemies = self:getActiveEnemies()
         if #active_enemies == 0 then
             self:setState("VICTORY")
+            for i,v in next,self.battle_ui.action_boxes do
+                v:setHeadIcon("victory")
+            end
         else
             for _,enemy in ipairs(active_enemies) do
                 enemy.current_target = enemy:getTarget()
@@ -663,10 +666,6 @@ function Battle:onStateChange(old,new)
         end
 
         win_text = self.encounter:getVictoryText(win_text, self.money, self.xp) or win_text
-
-        for i,v in next,self.battle_ui.action_boxes do
-            v:setHeadIcon("victory")
-        end
 
         if self.encounter.no_end_message then
             self:setState("TRANSITIONOUT")
@@ -3118,6 +3117,9 @@ function Battle:onKeyPressed(key)
         if key == "y" then
             Input.clear(nil, true)
             self:setState("VICTORY")
+            for i,v in next,self.battle_ui.action_boxes do
+                v:setHeadIcon("victory")
+            end
         end
         if key == "m" then
             if self.music then
