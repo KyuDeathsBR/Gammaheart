@@ -664,6 +664,10 @@ function Battle:onStateChange(old,new)
 
         win_text = self.encounter:getVictoryText(win_text, self.money, self.xp) or win_text
 
+        for i,v in next,self.battle_ui.action_boxes do
+            v:setHeadIcon("victory")
+        end
+
         if self.encounter.no_end_message then
             self:setState("TRANSITIONOUT")
             self.encounter:onBattleEnd()
