@@ -41,7 +41,7 @@ function actor:init()
         ["slide"]               = {"slide", 4/30, true},
 
         -- Battle animations
-        ["battle/idle"]         = {"battle/idle", 0.2, true},
+        ["battle/idle"]         = {"battle/idle", 1/12, true},
 
         ["battle/attack"]       = {"battle/attack", 1/15, false, next="battle/idle"},
         ["battle/act"]          = {"battle/act", 1/15, false, next="battle/idle"},
@@ -49,10 +49,11 @@ function actor:init()
         ["battle/item"]         = {"battle/item", 1/12, false, next="battle/idle"},
         ["battle/spare"]        = {"battle/act", 1/15, false, next="battle/idle"},
 
-        ["battle/attack_ready"] = {"battle/attackready", 1/12, true},
-        ["battle/act_ready"]    = {"battle/actready", 0.2, false},
-        ["battle/spell_ready"]  = {"battle/actready", 0.2, false},
-        ["battle/item_ready"]   = {"battle/itemready", 0.2, false},
+        ["battle/attack_ready"] = {"battle/attackready", 1/12, false, next="battle/attack_ready/loop"},
+        ["battle/attack_ready/loop"] = {"battle/attack_ready/loop", 1/12, true},
+        ["battle/act_ready"]    = {"battle/actready", 1/12, false},
+        ["battle/spell_ready"]  = {"battle/actready", 1/12, false},
+        ["battle/item_ready"]   = {"battle/itemready", 1/12, false},
         ["battle/defend_ready"] = {"battle/defend", 1/15, false},
 
         ["battle/act_end"]      = {"battle/idle", 1/15, false, next="battle/idle"},
@@ -98,6 +99,7 @@ function actor:init()
 
         ["battle/attack"] = {-2, 4},
         ["battle/attackready"] = {-2, 4},
+        ["battle/attack_ready/loop"] = {-2, 4},
         ["battle/act"] = {-2, 4},
         ["battle/actend"] = {-2, 4},
         ["battle/actready"] = {-2, 4},

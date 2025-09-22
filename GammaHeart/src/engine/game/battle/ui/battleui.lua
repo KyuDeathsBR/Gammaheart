@@ -1,5 +1,6 @@
 ---@class BattleUI : Object
 ---@overload fun(...) : BattleUI
+---@field action_boxes ActionBox[]
 local BattleUI, super = Class(Object)
 
 function BattleUI:init()
@@ -53,14 +54,16 @@ function BattleUI:init()
     self.secondary_team_size = (#Game.battle.party-#Game.party)
     self.main_team_size = (#Game.battle.party-self.secondary_team_size)
     for index,battler in ipairs(Game.battle.party) do
-        local xoff = index <= self.main_team_size and function(val)
+        local xoff = function(val)
+            return val
+        end --[[index <= self.main_team_size and function(val)
             return (val%self.main_team_size)%3
         end or function(val)
             return ((val-self.main_team_size)%self.secondary_team_size)%3
-        end
-        local action_box = ActionBox(size_offset+ xoff(index - 1) * (213 + box_gap), 0, index, battler)
+        end]]
+        local action_box = ActionBox((index - 1) * 213--[[size_offset+ xoff(index - 1) * (213 + box_gap)]], 0, index, battler)
         action_box.return_point = index <= self.main_team_size and -30-4*math.floor(math.min(self.secondary_team_size/3,1)) or math.min((-30+math.floor(index/3+1)*4)-4*math.floor(math.min(self.secondary_team_size/3,1)),12)
-        action_box.visible = index <= self.main_team_size and Game.battle.current_selecting <= self.main_team_size
+        --action_box.visible = index <= self.main_team_size and Game.battle.current_selecting <= self.main_team_size
         self:addChild(action_box)
         table.insert(self.action_boxes, action_box)
         battler.chara:onActionBox(action_box, false)
@@ -227,12 +230,12 @@ function BattleUI:update()
         end
     end
 
-    for _,box in ipairs(self.action_boxes) do
+    --[[for _,box in ipairs(self.action_boxes) do
         local subcheck1 = _ <= self.main_team_size and Game.battle.current_selecting <= self.main_team_size
         local subcheck2 = _-self.main_team_size <= self.secondary_team_size and Game.battle.current_selecting > self.main_team_size
         local check = subcheck1 or subcheck2 and _-self.main_team_size <= 3*(math.ceil(Game.battle.current_selecting-self.main_team_size/3))
         box.visible = check
-    end
+    end]]
 
     if self.attacking then
         local all_done = true
@@ -268,11 +271,11 @@ end
 
 function BattleUI:drawActionStrip()
     -- Draw the top line of the action strip
-    Draw.setColor(PALETTE["action_strip"])
-    love.graphics.rectangle("fill", 0, Game:getConfig("oldUIPositions") and 1 or 0, 640, Game:getConfig("oldUIPositions") and 3 or 2)
+    --Draw.setColor(PALETTE["action_strip"])
+    --love.graphics.rectangle("fill", 0, Game:getConfig("oldUIPositions") and 1 or 0, 640, Game:getConfig("oldUIPositions") and 3 or 2)
     -- Draw the background of the action strip
-    Draw.setColor(PALETTE["action_fill"])
-    love.graphics.rectangle("fill", 0, Game:getConfig("oldUIPositions") and 4 or 2, 640, Game:getConfig("oldUIPositions") and 33 or 35)
+    --Draw.setColor(PALETTE["action_fill"])
+    --love.graphics.rectangle("fill", 0, Game:getConfig("oldUIPositions") and 4 or 2, 640, Game:getConfig("oldUIPositions") and 33 or 35)
 end
 
 function BattleUI:drawActionArena()

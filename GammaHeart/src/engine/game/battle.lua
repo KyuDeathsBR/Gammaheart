@@ -1741,6 +1741,7 @@ function Battle:commitSingleAction(action)
                 end
             end
             battler:setAnimation(anim)
+            self.battle_ui.action_boxes[self:getPartyIndex(battler.chara.id)]:setHeadIcon(action.data.getIcon and action.data:getIcon() or "head")
             action.icon = anim
         end
     else

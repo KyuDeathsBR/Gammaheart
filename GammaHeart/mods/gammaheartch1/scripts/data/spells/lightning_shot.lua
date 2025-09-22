@@ -24,6 +24,7 @@ function spell:init()
         ["pt-br"] = "Forme suas mãos como se fossem uma arma,\ne dispare um potente raio",
         LOLCAT = "SHAEP UR CLAWZE LIEK A SHOOTY SHOOT, TEHN\n FIRE STRONG LAZAR BEEM!!"
     }
+    self.icon = "spell"
     -- TP cost
     self.cost = 32
 
@@ -32,6 +33,12 @@ function spell:init()
 
     -- Tags that apply to this spell
     self.tags = {"stun"}
+end
+
+---Returns the path to this spell's icon in the selection menu.
+---@return string
+function spell:getIcon()
+    return self.icon
 end
 
 function spell:isUsable(user)
