@@ -134,6 +134,7 @@ function Battle:init()
     self.current_actions = {}
     self.short_actions = {}
     self.current_action_index = 1
+    self.total_action_index = 0
     self.processed_action = {}
     self.processing_action = false
 
@@ -1016,9 +1017,11 @@ end
 
 function Battle:tryProcessNextAction(force)
     if self.state == "ACTIONS" and not self.processing_action then
+        Kristal.Console:log(self.total_action_index)
         if #self.current_actions == 0 then
             self:processCharacterActions()
         else
+            self.total_action_index = self.total_action_index + 1
             while self.current_action_index <= #self.current_actions do
                 local action = self.current_actions[self.current_action_index]
                 if not self.processed_action[action] then
@@ -2518,6 +2521,7 @@ function Battle:update()
     elseif self.state == "ATTACKING" then
         self:updateAttacking()
     elseif self.state == "ACTIONSDONE" then
+        self.total_action_index = 0
         self.actions_done_timer = Utils.approach(self.actions_done_timer, 0, DT)
         local any_hurt = false
         for _,enemy in ipairs(self.enemies) do
@@ -2785,7 +2789,7 @@ function Battle:updateAttacking()
             self:finishAllActions()
             self.completed_attacks = {}
             self.battle_ui.temp_attacker_table = null
-            Kristal.Console:log("CHECK0")
+            --Kristal.Console:log("CHECK0")
             self.completed_everything = false
             Game.battle.timer:after(0.1,function()
                 self.attack_done = false
@@ -2797,7 +2801,7 @@ function Battle:updateAttacking()
             end
             if all_done and (not self.battle_ui.temp_attacker_table or #self.battle_ui.temp_attacker_table == 0) and #self.battle_ui.attack_boxes > 0 then
                 if (self.completed_everything == false) then
-                    Kristal.Console:log("Log Time!\nalldone -> "..(all_done and "true" or "false"))
+                    --Kristal.Console:log("Log Time!\nalldone -> "..(all_done and "true" or "false"))
                 end
                 self.completed_everything = true
             end

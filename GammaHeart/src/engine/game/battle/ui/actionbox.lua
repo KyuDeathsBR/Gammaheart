@@ -24,7 +24,7 @@ function ActionBox:init(x, y, index, battler)
     self.box = ActionBoxDisplay(self)
     self.box.layer = 1
     self:addChild(self.box)
-
+    self._id = 1
 
     self.head_offset_x, self.head_offset_y = battler.chara:getHeadIconOffset()
 
@@ -127,11 +127,13 @@ function ActionBox:resetHeadIcon()
 end
 
 function ActionBox:update()
+    local action = Game.battle.current_actions[Game.battle.current_action_index]
+    self._id = action and action.character_id or self._id
     self.selection_siner = self.selection_siner + 2 * DTMULT
     local total = Utils.contains(Game.battle.state,"SELECT") and Game.battle.current_selecting or ({
-        ACTING = Game.battle.completed_attacks and #Game.battle.completed_attacks or 1,
-        ATTACKING = Game.battle.current_action_index,
-        BATTLETEXT = Game.battle.current_action_index
+        ACTING = self._id,
+        ATTACKING = Game.battle:getPartyIndex(Game.battle.attackers[1] and Game.battle.attackers[1].id or "") or 1,
+        BATTLETEXT = self._id,
     })[Game.battle.state] or 0
     local final_x = (self.index - math.max(total,1)) * 213
 
