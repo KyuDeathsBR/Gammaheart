@@ -147,6 +147,9 @@ function Battle:onStateChange(old,new)
         local active_enemies = self:getActiveEnemies()
         if #active_enemies == 0 then
             self:setState("VICTORY")
+            for i,v in next,self.battle_ui.action_boxes do
+                v:setHeadIcon("victory")
+            end
         else
             for _,enemy in ipairs(active_enemies) do
                 enemy.current_target = enemy:getTarget()

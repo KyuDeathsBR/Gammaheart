@@ -44,7 +44,7 @@ function actor:init()
         ["battle/idle"]         = {"battle/idle", 1/12, true},
 
         ["battle/attack"]       = {"battle/attack", 1/15, false, next="battle/idle"},
-        ["battle/act"]          = {"battle/act", 1/15, false, next="battle/idle"},
+        ["battle/act"]          = {"battle/act", 1/15, false,frames={1,2,3,4,2,3,4,2,3,4,2,3,4,2,3,4,2,3,4}, next="battle/idle"},
         ["battle/spell"]        = {"battle/act", 1/15, false, next="battle/idle"},
         ["battle/item"]         = {"battle/item", 1/12, false, next="battle/idle"},
         ["battle/spare"]        = {"battle/act", 1/15, false, next="battle/idle"},
@@ -100,7 +100,7 @@ function actor:init()
         ["battle/attack"] = {-12, 2},
         ["battle/attackready"] = {-12, 2},
         ["battle/attack_ready/loop"] = {-12, 2},
-        ["battle/act"] = {-2, 4},
+        ["battle/act"] = {-12, 2},
         ["battle/actend"] = {-2, 4},
         ["battle/actready"] = {-2, 4},
         ["battle/item"] = {-2, 4},
