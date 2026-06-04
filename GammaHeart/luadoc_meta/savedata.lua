@@ -171,6 +171,9 @@
 ---@field flags table<string, any>
 ---@field uniqueid string?
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

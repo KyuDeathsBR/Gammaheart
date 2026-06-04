@@ -1,5 +1,6 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ---@type PartyAlly
 local Dummy, super = Class(PartyAlly,"dummy")
 
@@ -54,6 +55,8 @@ end
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 ---@type PartyAlly
 local Dummy, super = Class(PartyAlly,"dummy")
 
@@ -106,6 +109,9 @@ function Dummy:init()
 end
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
