@@ -2,6 +2,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 local Dummy, super = Class(EnemyBattler)
 
 function Dummy:init()
@@ -171,6 +172,8 @@ end
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 local Dummy, super = Class(EnemyBattler)
 
 function Dummy:init()
@@ -336,6 +339,9 @@ end
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

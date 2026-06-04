@@ -2,6 +2,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ---@class PartyAlly : Class
 ---
 ---@field name table<LanguageID,string> table providing the translations of the ally's name
@@ -959,6 +960,8 @@ function PartyAlly:onPowerDeselect(menu) end
 return PartyAlly
 
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
