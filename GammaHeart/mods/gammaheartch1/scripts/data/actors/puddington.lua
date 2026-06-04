@@ -130,4 +130,7 @@ function actor:init()
 end
 
 return actor
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

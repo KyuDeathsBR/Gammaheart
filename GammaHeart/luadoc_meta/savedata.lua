@@ -170,4 +170,7 @@
 ---@field equipped {amulet: ItemSaveData, armor: [ItemSaveData, ItemSaveData]}
 ---@field flags table<string, any>
 ---@field uniqueid string?
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes

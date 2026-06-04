@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 ---@type PartyAlly
 local Dummy, super = Class(PartyAlly,"dummy")
 
@@ -51,6 +52,8 @@ function Dummy:init()
 end
 
 =======
+=======
+>>>>>>> Stashed changes
 ---@type PartyAlly
 local Dummy, super = Class(PartyAlly,"dummy")
 
@@ -102,5 +105,8 @@ function Dummy:init()
     self.stats.defense = 0
 end
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 return Dummy

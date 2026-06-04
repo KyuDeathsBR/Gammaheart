@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 local Dummy, super = Class(EnemyBattler)
 
 function Dummy:init()
@@ -162,6 +163,8 @@ function Dummy:onAct(battler, name)
 end
 
 =======
+=======
+>>>>>>> Stashed changes
 local Dummy, super = Class(EnemyBattler)
 
 function Dummy:init()
@@ -324,5 +327,8 @@ function Dummy:onAct(battler, name)
     return super.onAct(self, battler, name)
 end
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 return Dummy
